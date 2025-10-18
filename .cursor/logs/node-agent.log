@@ -1,0 +1,46 @@
+
+> agent-starter-node@1.0.0 dev /Users/alexandergu/Documents/GitHub/fin-assist/agent-starter-node
+> tsx src/agent.ts dev
+
+objc[67116]: Class GNotificationCenterDelegate is implemented in both /Users/alexandergu/Documents/GitHub/fin-assist/agent-starter-node/node_modules/.pnpm/@img+sharp-libvips-darwin-arm64@1.2.0/node_modules/@img/sharp-libvips-darwin-arm64/lib/libvips-cpp.8.17.1.dylib (0x13aa61af0) and /Users/alexandergu/Documents/GitHub/fin-assist/agent-starter-node/node_modules/.pnpm/@img+sharp-libvips-darwin-arm64@1.2.3/node_modules/@img/sharp-libvips-darwin-arm64/lib/libvips-cpp.8.17.2.dylib (0x13bbd9af8). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+[dotenv@17.2.3] injecting env (4) from .env.local -- tip: 🗂️ backup and recover secrets: https://dotenvx.com/ops
+objc[67176]: Class GNotificationCenterDelegate is implemented in both /Users/alexandergu/Documents/GitHub/fin-assist/agent-starter-node/node_modules/.pnpm/@img+sharp-libvips-darwin-arm64@1.2.0/node_modules/@img/sharp-libvips-darwin-arm64/lib/libvips-cpp.8.17.1.dylib (0x133801af0) and /Users/alexandergu/Documents/GitHub/fin-assist/agent-starter-node/node_modules/.pnpm/@img+sharp-libvips-darwin-arm64@1.2.3/node_modules/@img/sharp-libvips-darwin-arm64/lib/libvips-cpp.8.17.2.dylib (0x1376ddaf8). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+/Users/alexandergu/Documents/GitHub/fin-assist/agent-starter-node/node_modules/.pnpm/@livekit+agents-plugin-livekit@1.0.11_@livekit+agents@1.0.11_@livekit+rtc-node@0.13.20_/node_modules/@livekit/agents-plugin-livekit/dist/turn_detector/base.js:47
+        throw new Error(
+              ^
+
+
+Error: agents-plugins-livekit failed to initialize multilingual EOU turn detector: Required model files not found locally.
+
+This usually means you need to download the model files first. Please run one of these commands:
+
+  If using Node.js starter template:
+    pnpm download-files
+
+  If using the agent directly:
+    node ./your_agent.ts download-files
+
+Then try running your application again.
+
+Original error: Error: `local_files_only=true` or `env.allowRemoteModels=false` and file was not found locally at "/Users/alexandergu/Documents/GitHub/fin-assist/agent-starter-node/node_modules/.pnpm/@huggingface+transformers@3.7.2/node_modules/@huggingface/transformers/models/livekit/turn-detector/tokenizer.json".
+    at EUORunnerMultilingual.initialize (/Users/alexandergu/Documents/GitHub/fin-assist/agent-starter-node/node_modules/.pnpm/@livekit+agents-plugin-livekit@1.0.11_@livekit+agents@1.0.11_@livekit+rtc-node@0.13.20_/node_modules/@livekit/agents-plugin-livekit/dist/turn_detector/base.js:47:15)
+    at async <anonymous> (/Users/alexandergu/Documents/GitHub/fin-assist/agent-starter-node/node_modules/.pnpm/@livekit+agents@1.0.11_@livekit+rtc-node@0.13.20/node_modules/@livekit/agents/dist/ipc/inference_proc_lazy_main.js:30:9)
+    at async Promise.all (index 1)
+    at async <anonymous> (/Users/alexandergu/Documents/GitHub/fin-assist/agent-starter-node/node_modules/.pnpm/@livekit+agents@1.0.11_@livekit+rtc-node@0.13.20/node_modules/@livekit/agents/dist/ipc/inference_proc_lazy_main.js:27:5)
+
+Node.js v24.3.0
+libc++abi: terminating due to uncaught exception of type std::__1::system_error: mutex lock failed: Invalid argument
+/Users/alexandergu/Documents/GitHub/fin-assist/agent-starter-node/node_modules/.pnpm/@livekit+agents@1.0.11_@livekit+rtc-node@0.13.20/node_modules/@livekit/agents/src/ipc/supervised_proc.ts:164
+      throw err;
+      ^
+
+
+Error: runner initialization timed out
+    at Timeout._onTimeout (/Users/alexandergu/Documents/GitHub/fin-assist/agent-starter-node/node_modules/.pnpm/@livekit+agents@1.0.11_@livekit+rtc-node@0.13.20/node_modules/@livekit/agents/src/ipc/supervised_proc.ts:162:19)
+    at listOnTimeout (node:internal/timers:608:17)
+    at process.processTimers (node:internal/timers:543:7)
+
+Node.js v24.3.0
+/Users/alexandergu/Documents/GitHub/fin-assist/agent-starter-node:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  agent-starter-node@1.0.0 dev: `tsx src/agent.ts dev`
+Exit status 1

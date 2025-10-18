@@ -1,0 +1,10 @@
+
+> web@0.1.0 agent /Users/alexandergu/Documents/GitHub/fin-assist
+> tsx src/agent/runWorker.ts dev
+
+[dotenv@17.2.3] injecting env (8) from .env.local -- tip: ⚙️  load multiple .env files with { path: ['.env.local', '.env'] }
+[14:53:15.369] [32mINFO[39m (62353): [36mstarting worker[39m
+    version: "0.1.0"
+[14:53:15.383] [32mINFO[39m (62353): [36mServer is listening on port 61673[39m
+[14:53:15.527] [41mFATAL[49m (62353): [36mclosing worker due to error.[39m
+ ELIFECYCLE  Command failed with exit code 1.

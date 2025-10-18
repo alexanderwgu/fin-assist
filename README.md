@@ -1,55 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This repo now uses LiveKit example projects for both the frontend and agent.
 
-## Getting Started
+## Environment
 
-First, install dependencies with pnpm:
+- Single env file at repo root: `.env.local`
+- Required keys:
+  - LIVEKIT_URL, LIVEKIT_API_KEY, LIVEKIT_API_SECRET
+  - NEXT_PUBLIC_AGENT_NAME (e.g. calmcall-voice-agent)
+  - Optional: NEXT_PUBLIC_LIVEKIT_URL (frontend only; defaults to LIVEKIT_URL)
 
-```bash
-pnpm install
-```
+## Frontend (finassist-agent)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Source: `finassist-agent` cloned from [agent-starter-react](https://github.com/livekit-examples/agent-starter-react)
+- Loads env from repo root via `next.config.ts`
+- Run:
+  - `pnpm agent` (or `pnpm --filter ./finassist-agent dev`)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Agent (agent-starter-node)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Source: `agent-starter-node` cloned from [agent-starter-node](https://github.com/livekit-examples/agent-starter-node)
+- Loads env from repo root in `src/agent.ts`
+- First time only: `pnpm --filter ./agent-starter-node download-files`
+- Run agent: `pnpm --filter ./agent-starter-node dev`
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Voice Agent Setup
-
-Create a `.env.local` file at `web/.env.local` with:
-
-```
-GEMINI_API_KEY=...
-ELEVENLABS_API_KEY=...
-ELEVENLABS_VOICE_ID=...
-
-# Google Cloud STT auth (choose one):
-# Use ADC (gcloud auth application-default login) locally
-# or set a JSON key path:
-GOOGLE_APPLICATION_CREDENTIALS=/absolute/path/to/service-account.json
-
-# Optional Speech configs
-GOOGLE_SPEECH_LANGUAGE=en-US
-GOOGLE_SPEECH_MODEL=
-```
-
-Run the dev server (if desired):
+## Run both
 
 ```bash
-pnpm dev
+pnpm agent:up
 ```
 
-Usage:
-- Hold the button to record.
-- On release, the audio is sent to `/api/voice/turn`.
-- Server transcribes → runs the agent → synthesizes audio via ElevenLabs.
-- Page plays the returned audio and shows transcript/reply.
+Docs: [Voice AI quickstart](https://docs.livekit.io/agents/start/voice-ai/)
