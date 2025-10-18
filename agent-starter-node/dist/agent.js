@@ -3,13 +3,8 @@ import * as livekit from '@livekit/agents-plugin-livekit';
 import * as silero from '@livekit/agents-plugin-silero';
 import { BackgroundVoiceCancellation } from '@livekit/noise-cancellation-node';
 import dotenv from 'dotenv';
-import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-// Load env from repo root .env.local regardless of CWD
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: path.resolve(__dirname, '../../.env.local') });
-// Fallback to default resolution (.env, .env.local in CWD) if needed
-dotenv.config();
+dotenv.config({ path: '.env.local' });
 class Assistant extends voice.Agent {
     constructor() {
         super({
@@ -97,26 +92,5 @@ export default defineAgent({
         await ctx.connect();
     },
 });
-const AGENT_NAME = process.env.AGENT_NAME || 'calmcall-voice-agent';
-const LIVEKIT_URL = process.env.LIVEKIT_URL;
-const LIVEKIT_API_KEY = process.env.LIVEKIT_API_KEY;
-const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET;
-// Preflight env validation for clearer errors
-const missing = [
-    LIVEKIT_URL ? null : 'LIVEKIT_URL',
-    LIVEKIT_API_KEY ? null : 'LIVEKIT_API_KEY',
-    LIVEKIT_API_SECRET ? null : 'LIVEKIT_API_SECRET',
-].filter(Boolean);
-if (missing.length) {
-    console.error(`[env] Missing required variables: ${missing.join(', ')}`);
-    process.exit(1);
-}
-cli.runApp(new WorkerOptions({
-    agent: fileURLToPath(import.meta.url),
-    agentName: AGENT_NAME,
-    logLevel: process.env.LK_LOG_LEVEL || 'info',
-    wsURL: LIVEKIT_URL,
-    apiKey: LIVEKIT_API_KEY,
-    apiSecret: LIVEKIT_API_SECRET,
-}));
+cli.runApp(new WorkerOptions({ agent: fileURLToPath(import.meta.url) }));
 //# sourceMappingURL=agent.js.map

@@ -39,11 +39,5 @@
     "@livekit/noise-cancellation-node": "^0.1.9",
     "dotenv": "^17.2.1",
     "zod": "^3.25.76"
-  },
-  "pnpm": {
-    "overrides": {
-      "@img/sharp-libvips-darwin-arm64": "^1.2.3",
-      "@img/sharp-libvips": "^1.2.3"
-    }
   }
 }
