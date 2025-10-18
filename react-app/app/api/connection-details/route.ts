@@ -41,7 +41,12 @@ export async function POST(req: Request) {
     const roomName = `voice_assistant_room_${Math.floor(Math.random() * 10_000)}${suffix}`;
 
     const participantToken = await createParticipantToken(
-      { identity: participantIdentity, name: participantName },
+      {
+        identity: participantIdentity,
+        name: participantName,
+        metadata: sessionMode ? JSON.stringify({ mode: sessionMode }) : undefined,
+        // attributes: sessionMode ? { mode: sessionMode } : undefined, // optional if supported
+      },
       roomName,
       agentName
     );

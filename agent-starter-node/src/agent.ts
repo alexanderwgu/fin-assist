@@ -98,17 +98,21 @@ export default defineAgent({
 
     ctx.addShutdownCallback(logUsage);
 
-    // Start the session, which initializes the voice pipeline and warms up the models
-    // Derive session mode from room name suffix: ..._budgeting or ..._hotline
+    // Join the room first so that room name/metadata are available for mode selection
+    await ctx.connect();
+
+    // Determine session mode from room name suffix (set by server), e.g., `_budgeting` or `_hotline`
     const roomName = ctx.room?.name ?? '';
-    const modeFromRoom = roomName.endsWith('_budgeting')
+    const modeFromRoom: SessionMode | undefined = roomName.endsWith('_budgeting')
       ? 'budgeting'
       : roomName.endsWith('_hotline')
         ? 'hotline'
         : undefined;
-    const instructions = getPromptForMode(modeFromRoom as SessionMode | undefined);
+
+    const instructions = getPromptForMode(modeFromRoom);
     const tools = getToolsForMode(modeFromRoom as SessionMode | undefined, ctx.room as any);
 
+    // Start the session, which initializes the voice pipeline and warms up the models
     await session.start({
       agent: new Assistant(instructions, tools),
       room: ctx.room,
@@ -119,9 +123,6 @@ export default defineAgent({
         noiseCancellation: BackgroundVoiceCancellation(),
       },
     });
-
-    // Join the room and connect to the user
-    await ctx.connect();
   },
 });
 

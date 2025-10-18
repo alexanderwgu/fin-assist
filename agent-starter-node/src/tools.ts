@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 export type SessionMode = 'budgeting' | 'hotline';
 
-export type ToolsMap = Record<string, ReturnType<typeof llm.tool>>;
+export type ToolsMap = Record<string, unknown>;
 
 type RoomLike = {
   localParticipant?: {
@@ -32,7 +32,10 @@ export function getToolsForMode(mode: SessionMode | undefined, room: RoomLike): 
             z.object({
               source: z.string().describe('Source node id (e.g., "Income")'),
               target: z.string().describe('Target node id (e.g., "Rent")'),
-              value: z.number().positive().describe('Monthly amount flowing from source to target'),
+              value: z
+                .number()
+                .min(0.000001)
+                .describe('Monthly amount flowing from source to target'),
             })
           )
           .min(1)
