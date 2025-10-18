@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Room, RoomEvent, TokenSource } from 'livekit-client';
 import { AppConfig } from '@/app-config';
+import { useSession } from '@/components/app/session-provider';
 import { toastAlert } from '@/components/livekit/alert-toast';
 
 export function useRoom(appConfig: AppConfig) {
   const aborted = useRef(false);
   const room = useMemo(() => new Room(), []);
   const [isSessionActive, setIsSessionActive] = useState(false);
+  const { sessionMode } = useSession();
 
   useEffect(() => {
     function onDisconnected() {
@@ -57,6 +59,7 @@ export function useRoom(appConfig: AppConfig) {
                     agents: [{ agent_name: appConfig.agentName }],
                   }
                 : undefined,
+              session_mode: sessionMode,
             }),
           });
           return await res.json();
@@ -65,10 +68,10 @@ export function useRoom(appConfig: AppConfig) {
           throw new Error('Error fetching connection details!');
         }
       }),
-    [appConfig]
+    [appConfig, sessionMode]
   );
 
-  const startSession = useCallback(() => {
+  const startSession = useCallback((mode?: 'budgeting' | 'hotline') => {
     setIsSessionActive(true);
 
     if (room.state === 'disconnected') {

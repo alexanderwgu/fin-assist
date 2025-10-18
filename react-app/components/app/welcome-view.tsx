@@ -20,12 +20,14 @@ function WelcomeImage() {
 
 interface WelcomeViewProps {
   startButtonText: string;
-  onStartCall: () => void;
+  onStartCallHotline: () => void;
+  onStartCallBudgeting: () => void;
 }
 
 export const WelcomeView = ({
   startButtonText,
-  onStartCall,
+  onStartCallHotline,
+  onStartCallBudgeting,
   ref,
 }: React.ComponentProps<'div'> & WelcomeViewProps) => {
   return (
@@ -37,9 +39,14 @@ export const WelcomeView = ({
           Chat live with your voice AI agent
         </p>
 
-        <Button variant="primary" size="lg" onClick={onStartCall} className="mt-6 w-64 font-mono">
-          {startButtonText}
-        </Button>
+        <div className="mt-6 grid w-64 grid-cols-1 gap-2">
+          <Button variant="primary" size="lg" onClick={onStartCallBudgeting} className="font-mono">
+            Start Budgeting Session
+          </Button>
+          <Button variant="secondary" size="lg" onClick={onStartCallHotline} className="font-mono">
+            Start Hotline Assistant
+          </Button>
+        </div>
       </section>
 
       <div className="fixed bottom-5 left-0 flex w-full items-center justify-center">

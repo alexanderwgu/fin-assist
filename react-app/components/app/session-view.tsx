@@ -15,6 +15,7 @@ import { useConnectionTimeout } from '@/hooks/useConnectionTimout';
 import { useDebugMode } from '@/hooks/useDebug';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '../livekit/scroll-area/scroll-area';
+import { useRemoteParticipants } from '@livekit/components-react';
 
 const MotionBottom = motion.create('div');
 
@@ -71,6 +72,7 @@ export const SessionView = ({
 
   const messages = useChatMessages();
   const [chatOpen, setChatOpen] = useState(false);
+  useRemoteParticipants();
 
   const controls: ControlBarControls = {
     leave: true,

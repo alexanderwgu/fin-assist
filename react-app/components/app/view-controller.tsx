@@ -51,7 +51,8 @@ export function ViewController() {
           key="welcome"
           {...VIEW_MOTION_PROPS}
           startButtonText={appConfig.startButtonText}
-          onStartCall={startSession}
+          onStartCallHotline={() => startSession('hotline')}
+          onStartCallBudgeting={() => startSession('budgeting')}
         />
       )}
       {/* Session view */}

@@ -1,18 +1,22 @@
 'use client';
 
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useContext, useMemo, useCallback, useState } from 'react';
 import { RoomContext } from '@livekit/components-react';
 import { APP_CONFIG_DEFAULTS, type AppConfig } from '@/app-config';
 import { useRoom } from '@/hooks/useRoom';
 
+type SessionMode = 'budgeting' | 'hotline' | undefined;
+
 const SessionContext = createContext<{
   appConfig: AppConfig;
   isSessionActive: boolean;
-  startSession: () => void;
+  sessionMode?: SessionMode;
+  startSession: (mode?: SessionMode) => void;
   endSession: () => void;
 }>({
   appConfig: APP_CONFIG_DEFAULTS,
   isSessionActive: false,
+  sessionMode: undefined,
   startSession: () => {},
   endSession: () => {},
 });
@@ -24,9 +28,19 @@ interface SessionProviderProps {
 
 export const SessionProvider = ({ appConfig, children }: SessionProviderProps) => {
   const { room, isSessionActive, startSession, endSession } = useRoom(appConfig);
+  const [sessionMode, setSessionMode] = useState<SessionMode>(undefined);
+
+  const startSessionWithMode = useCallback(
+    (mode?: SessionMode) => {
+      setSessionMode(mode);
+      startSession(mode);
+    },
+    [startSession]
+  );
+
   const contextValue = useMemo(
-    () => ({ appConfig, isSessionActive, startSession, endSession }),
-    [appConfig, isSessionActive, startSession, endSession]
+    () => ({ appConfig, isSessionActive, sessionMode, startSession: startSessionWithMode, endSession }),
+    [appConfig, isSessionActive, sessionMode, startSessionWithMode, endSession]
   );
 
   return (
