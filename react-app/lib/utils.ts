@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 import { APP_CONFIG_DEFAULTS } from '@/app-config';
 import type { AppConfig } from '@/app-config';
 
-export const CONFIG_ENDPOINT = process.env.NEXT_PUBLIC_APP_CONFIG_ENDPOINT;
+export const CONFIG_ENDPOINT = process.env.NEXT_PUBLIC_APP_CONFIG_ENDPOINT || '/api/app-config';
 export const SANDBOX_ID = process.env.SANDBOX_ID;
 
 export const THEME_STORAGE_KEY = 'theme-mode';
@@ -25,44 +25,50 @@ export function cn(...inputs: ClassValue[]) {
 // https://react.dev/reference/react/cache#caveats
 // > React will invalidate the cache for all memoized functions for each server request.
 export const getAppConfig = cache(async (headers: Headers): Promise<AppConfig> => {
-  if (CONFIG_ENDPOINT) {
-    const sandboxId = SANDBOX_ID ?? headers.get('x-sandbox-id') ?? '';
+  const sandboxId = SANDBOX_ID ?? headers.get('x-sandbox-id') ?? '';
 
-    try {
-      if (!sandboxId) {
-        throw new Error('Sandbox ID is required');
-      }
+  try {
+    // Allow CONFIG_ENDPOINT to be relative (e.g. '/api/app-config') on the server by resolving against request origin
+    const proto = headers.get('x-forwarded-proto');
+    const host = headers.get('host');
+    const inferredOrigin = proto && host ? `${proto}://${host}` : undefined;
+    const fallbackOrigin =
+      process.env.NEXT_PUBLIC_SITE_URL ??
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
+    const base = inferredOrigin ?? fallbackOrigin;
+    const endpointUrl = new URL(CONFIG_ENDPOINT, base);
 
-      const response = await fetch(CONFIG_ENDPOINT, {
-        cache: 'no-store',
-        headers: { 'X-Sandbox-ID': sandboxId },
-      });
+    const response = await fetch(endpointUrl.toString(), {
+      cache: 'no-store',
+      headers: sandboxId ? { 'X-Sandbox-ID': sandboxId } : undefined,
+    });
 
-      const remoteConfig: SandboxConfig = await response.json();
-      const config: AppConfig = { ...APP_CONFIG_DEFAULTS, sandboxId };
-
-      for (const [key, entry] of Object.entries(remoteConfig)) {
-        if (entry === null) continue;
-        // Only include app config entries that are declared in defaults and, if set,
-        // share the same primitive type as the default value.
-        if (
-          (key in APP_CONFIG_DEFAULTS &&
-            APP_CONFIG_DEFAULTS[key as keyof AppConfig] === undefined) ||
-          (typeof config[key as keyof AppConfig] === entry.type &&
-            typeof config[key as keyof AppConfig] === typeof entry.value)
-        ) {
-          // @ts-expect-error I'm not sure quite how to appease TypeScript, but we've thoroughly checked types above
-          config[key as keyof AppConfig] = entry.value as AppConfig[keyof AppConfig];
-        }
-      }
-
-      return config;
-    } catch (error) {
-      console.error('ERROR: getAppConfig() - lib/utils.ts', error);
+    // Accept either our SandboxConfig shape or a direct AppConfig
+    const json = await response.json();
+    if (json && json.pageTitle && json.companyName) {
+      return { ...APP_CONFIG_DEFAULTS, ...json } satisfies AppConfig;
     }
-  }
 
-  return APP_CONFIG_DEFAULTS;
+    const remoteConfig: SandboxConfig = json;
+    const config: AppConfig = { ...APP_CONFIG_DEFAULTS, sandboxId };
+
+    for (const [key, entry] of Object.entries(remoteConfig)) {
+      if (entry === null) continue;
+      if (
+        (key in APP_CONFIG_DEFAULTS && APP_CONFIG_DEFAULTS[key as keyof AppConfig] === undefined) ||
+        (typeof config[key as keyof AppConfig] === entry.type &&
+          typeof config[key as keyof AppConfig] === typeof entry.value)
+      ) {
+        // @ts-expect-error see above
+        config[key as keyof AppConfig] = entry.value as AppConfig[keyof AppConfig];
+      }
+    }
+
+    return config;
+  } catch (error) {
+    console.error('ERROR: getAppConfig() - lib/utils.ts', error);
+    return APP_CONFIG_DEFAULTS;
+  }
 });
 
 // check provided accent colors against defaults

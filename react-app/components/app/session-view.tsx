@@ -16,6 +16,8 @@ import { useDebugMode } from '@/hooks/useDebug';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '../livekit/scroll-area/scroll-area';
 import { useRemoteParticipants } from '@livekit/components-react';
+import { useBudgetSankey } from '@/hooks/useBudgetSankey';
+import { BudgetSankey } from '@/components/app/BudgetSankey';
 
 const MotionBottom = motion.create('div');
 
@@ -73,6 +75,7 @@ export const SessionView = ({
   const messages = useChatMessages();
   const [chatOpen, setChatOpen] = useState(false);
   useRemoteParticipants();
+  const { nodes, links } = useBudgetSankey();
 
   const controls: ControlBarControls = {
     leave: true,
@@ -103,6 +106,13 @@ export const SessionView = ({
 
       {/* Tile Layout */}
       <TileLayout chatOpen={chatOpen} />
+
+      {/* Budget Sankey (if provided by agent tool) */}
+      {nodes && links && links.length > 0 && (
+        <div className="fixed right-3 top-3 z-50 w-[min(90vw,700px)] bg-background/80 backdrop-blur-md">
+          <BudgetSankey nodes={nodes} links={links} />
+        </div>
+      )}
 
       {/* Bottom */}
       <MotionBottom

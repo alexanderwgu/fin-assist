@@ -13,13 +13,16 @@ import { BackgroundVoiceCancellation } from '@livekit/noise-cancellation-node';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'node:url';
 import { getPromptForMode, type SessionMode } from './prompts';
+import { getToolsForMode } from './tools';
 
 dotenv.config({ path: '.env.local' });
 
 class Assistant extends voice.Agent {
-  constructor(instructions: string) {
+  constructor(instructions: string, tools?: Record<string, unknown>) {
     super({
       instructions,
+      // pass tools to the agent so LLM can call them
+      tools: tools as any,
 
       // To add tools, specify `tools` in the constructor.
       // Here's an example that adds a simple weather tool.
@@ -104,9 +107,10 @@ export default defineAgent({
         ? 'hotline'
         : undefined;
     const instructions = getPromptForMode(modeFromRoom as SessionMode | undefined);
+    const tools = getToolsForMode(modeFromRoom as SessionMode | undefined, ctx.room as any);
 
     await session.start({
-      agent: new Assistant(instructions),
+      agent: new Assistant(instructions, tools),
       room: ctx.room,
       inputOptions: {
         // LiveKit Cloud enhanced noise cancellation
