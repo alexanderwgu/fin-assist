@@ -1,5 +1,5 @@
 {
-  "name": "agent-starter-react",
+  "name": "calmcall",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -20,6 +20,7 @@
     "buffer-image-size": "^0.6.4",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "d3-sankey": "^0.12.3",
     "jose": "^6.0.12",
     "livekit-client": "^2.15.8",
     "livekit-server-sdk": "^2.13.2",
@@ -30,12 +31,17 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "sonner": "^2.0.3",
-    "tailwind-merge": "^3.3.0"
+    "tailwind-merge": "^3.3.0",
+    "@fortawesome/fontawesome-svg-core": "^6.6.0",
+    "@fortawesome/free-solid-svg-icons": "^6.6.0",
+    "@fortawesome/react-fontawesome": "^0.2.2",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@trivago/prettier-plugin-sort-imports": "^5.2.2",
+    "@types/d3-sankey": "^0.12.4",
     "@types/node": "^22.0.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",

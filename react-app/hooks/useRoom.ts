@@ -7,6 +7,7 @@ export function useRoom(appConfig: AppConfig) {
   const aborted = useRef(false);
   const room = useMemo(() => new Room(), []);
   const [isSessionActive, setIsSessionActive] = useState(false);
+  const selectedModeRef = useRef<'budgeting' | 'hotline' | undefined>(undefined);
 
   useEffect(() => {
     function onDisconnected() {
@@ -57,6 +58,7 @@ export function useRoom(appConfig: AppConfig) {
                     agents: [{ agent_name: appConfig.agentName }],
                   }
                 : undefined,
+              session_mode: selectedModeRef.current,
             }),
           });
           return await res.json();
@@ -68,8 +70,9 @@ export function useRoom(appConfig: AppConfig) {
     [appConfig]
   );
 
-  const startSession = useCallback(() => {
+  const startSession = useCallback((mode?: 'budgeting' | 'hotline') => {
     setIsSessionActive(true);
+    selectedModeRef.current = mode;
 
     if (room.state === 'disconnected') {
       const { isPreConnectBufferEnabled } = appConfig;

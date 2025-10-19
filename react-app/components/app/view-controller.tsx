@@ -1,11 +1,13 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { useRoomContext } from '@livekit/components-react';
 import { useSession } from '@/components/app/session-provider';
 import { SessionView } from '@/components/app/session-view';
 import { WelcomeView } from '@/components/app/welcome-view';
+import { OnboardingView } from '@/components/app/onboarding-view';
+import { getOnboardingData, saveOnboardingData } from '@/lib/onboarding';
 
 const MotionWelcomeView = motion.create(WelcomeView);
 const MotionSessionView = motion.create(SessionView);
@@ -32,6 +34,19 @@ export function ViewController() {
   const room = useRoomContext();
   const isSessionActiveRef = useRef(false);
   const { appConfig, isSessionActive, startSession } = useSession();
+  const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userName, setUserName] = useState('');
+
+  // Check if onboarding has been completed on mount
+  useEffect(() => {
+    const onboardingData = getOnboardingData();
+    if (onboardingData) {
+      setUserName(onboardingData.name);
+      setIsOnboardingComplete(true);
+    }
+    setIsLoading(false);
+  }, []);
 
   // animation handler holds a reference to stale isSessionActive value
   isSessionActiveRef.current = isSessionActive;
@@ -43,15 +58,40 @@ export function ViewController() {
     }
   };
 
+  const handleOnboardingComplete = (userData: { name: string; age: string }) => {
+    saveOnboardingData(userData);
+    setUserName(userData.name);
+    setIsOnboardingComplete(true);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="size-8 animate-spin rounded-full border-4 border-muted border-t-foreground" />
+      </div>
+    );
+  }
+
   return (
     <AnimatePresence mode="wait">
+      {/* Onboarding screen */}
+      {!isOnboardingComplete && !isSessionActive && (
+        <motion.div
+          key="onboarding"
+          {...VIEW_MOTION_PROPS}
+        >
+          <OnboardingView onComplete={handleOnboardingComplete} />
+        </motion.div>
+      )}
       {/* Welcome screen */}
-      {!isSessionActive && (
+      {isOnboardingComplete && !isSessionActive && (
         <MotionWelcomeView
           key="welcome"
           {...VIEW_MOTION_PROPS}
           startButtonText={appConfig.startButtonText}
-          onStartCall={startSession}
+          onStartCallHotline={() => startSession('hotline')}
+          onStartCallBudgeting={() => startSession('budgeting')}
+          userName={userName}
         />
       )}
       {/* Session view */}

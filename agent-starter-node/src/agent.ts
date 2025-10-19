@@ -6,46 +6,24 @@ import {
   defineAgent,
   metrics,
   voice,
+  inference,
 } from '@livekit/agents';
 import * as livekit from '@livekit/agents-plugin-livekit';
 import * as silero from '@livekit/agents-plugin-silero';
 import { BackgroundVoiceCancellation } from '@livekit/noise-cancellation-node';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'node:url';
+import { getPromptForMode, type SessionMode } from './prompts.js';
+import { getToolsForMode } from './tools.js';
 
 dotenv.config({ path: '.env.local' });
 
 class Assistant extends voice.Agent {
-  constructor() {
+  constructor(instructions: string, tools?: Record<string, unknown>) {
     super({
-      instructions: `You are CalmCall, a calm, empathetic financial hotline assistant for voice and chat.
-
-      Your purpose:
-      - Help people feel safer and less overwhelmed.
-      - Detect crisis language and respond with grounding plus human resources.
-      - Teach basic financial literacy and create small, doable action plans.
-
-      Tone and style:
-      - Warm, non-judgmental, simple language. No jargon unless asked.
-      - Short, speakable replies (2-4 sentences), steady pace, gentle tone.
-      - No emojis or decorative formatting.
-
-      Crisis protocol (triggered by phrases like "I'm overwhelmed", "I can't pay rent", "I want to give up", self-harm, or immediate danger):
-      1) Validate feelings briefly.
-      2) Lead a short grounding exercise (inhale 4, hold 4, exhale 6; repeat twice).
-      3) Encourage contacting a human:
-         - US: 988 Suicide & Crisis Lifeline. If in immediate danger: 911.
-         - Financial and housing help: 211 can connect to local resources.
-         - If outside the US: advise calling local emergency services or a local crisis line.
-      Ask if they'd like the numbers. Safety first; only continue once they confirm they're safe.
-
-      Non-crisis help:
-      - Clarify the goal in one short question, then offer 1-3 practical steps.
-      - Focus areas: budgeting, debt triage, bill negotiation, hardship programs, emergency relief, and credit basics.
-      - Offer to draft a 7-day plan, a budget template, or a call script for a creditor.
-      - Normalize confusion. Never shame. No investment, legal, or medical advice.
-
-      Close each turn with a supportive CTA like "I'm here to help—want me to map the next steps?"`,
+      instructions,
+      // pass tools to the agent so LLM can call them
+      tools: tools as any,
 
       // To add tools, specify `tools` in the constructor.
       // Here's an example that adds a simple weather tool.
@@ -77,6 +55,17 @@ export default defineAgent({
   },
   entry: async (ctx: JobContext) => {
     // Set up a voice AI pipeline using OpenAI, Cartesia, AssemblyAI, and the LiveKit turn detector
+    // Configure primary and fallback TTS providers
+    const PRIMARY_TTS_MODEL = process.env.PRIMARY_TTS_MODEL || 'elevenlabs/eleven_turbo_v2';
+    const PRIMARY_TTS_VOICE = process.env.PRIMARY_TTS_VOICE || '21m00Tcm4TlvDq8ikWAM';
+    const FALLBACK_TTS_MODEL = process.env.FALLBACK_TTS_MODEL || 'cartesia/sonic-2';
+    const FALLBACK_TTS_VOICE = process.env.FALLBACK_TTS_VOICE || undefined;
+
+    const primaryTTS = new inference.TTS({
+      model: PRIMARY_TTS_MODEL as any,
+      voice: PRIMARY_TTS_VOICE,
+    });
+
     const session = new voice.AgentSession({
       // Speech-to-text (STT) is your agent's ears, turning the user's speech into text that the LLM can understand
       // See all available models at https://docs.livekit.io/agents/models/stt/
@@ -88,7 +77,7 @@ export default defineAgent({
 
       // Text-to-speech (TTS) is your agent's voice, turning the LLM's text into speech that the user can hear
       // See all available models as well as voice selections at https://docs.livekit.io/agents/models/tts/
-      tts: 'elevenlabs/eleven_turbo_v2:21m00Tcm4TlvDq8ikWAM',
+      tts: primaryTTS,
 
       // VAD and turn detection are used to determine when the user is speaking and when the agent should respond
       // See more at https://docs.livekit.io/agents/build/turns
@@ -106,6 +95,29 @@ export default defineAgent({
     //   llm: new openai.realtime.RealtimeModel({ voice: 'marin' }),
     // });
 
+    // If the primary TTS encounters an error, switch to a fallback model for subsequent turns
+    session.on(voice.AgentSessionEventTypes.Error, (ev) => {
+      const isTTSError = typeof ev?.error === 'object' && ev?.error !== null && 'type' in (ev.error as any) && (ev.error as any).type === 'tts_error';
+      const fromTTS = ev?.source && typeof ev.source === 'object' && 'label' in (ev.source as any);
+      if (isTTSError || fromTTS) {
+        try {
+          if (FALLBACK_TTS_VOICE) {
+            primaryTTS.updateOptions({
+              model: FALLBACK_TTS_MODEL as any,
+              voice: FALLBACK_TTS_VOICE,
+            });
+          } else {
+            primaryTTS.updateOptions({
+              model: FALLBACK_TTS_MODEL as any,
+            });
+          }
+          console.warn('[TTS] Switched to fallback TTS model:', FALLBACK_TTS_MODEL);
+        } catch (e) {
+          console.error('Failed to switch to fallback TTS model', e);
+        }
+      }
+    });
+
     // Metrics collection, to measure pipeline performance
     // For more information, see https://docs.livekit.io/agents/build/metrics/
     const usageCollector = new metrics.UsageCollector();
@@ -121,9 +133,23 @@ export default defineAgent({
 
     ctx.addShutdownCallback(logUsage);
 
+    // Join the room first so that room name/metadata are available for mode selection
+    await ctx.connect();
+
+    // Determine session mode from room name suffix (set by server), e.g., `_budgeting` or `_hotline`
+    const roomName = ctx.room?.name ?? '';
+    const modeFromRoom: SessionMode | undefined = roomName.endsWith('_budgeting')
+      ? 'budgeting'
+      : roomName.endsWith('_hotline')
+        ? 'hotline'
+        : undefined;
+
+    const instructions = getPromptForMode(modeFromRoom);
+    const tools = getToolsForMode(modeFromRoom as SessionMode | undefined, ctx.room as any);
+
     // Start the session, which initializes the voice pipeline and warms up the models
     await session.start({
-      agent: new Assistant(),
+      agent: new Assistant(instructions, tools),
       room: ctx.room,
       inputOptions: {
         // LiveKit Cloud enhanced noise cancellation
@@ -132,9 +158,6 @@ export default defineAgent({
         noiseCancellation: BackgroundVoiceCancellation(),
       },
     });
-
-    // Join the room and connect to the user
-    await ctx.connect();
   },
 });
 

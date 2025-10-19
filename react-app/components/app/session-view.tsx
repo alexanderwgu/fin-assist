@@ -15,6 +15,9 @@ import { useConnectionTimeout } from '@/hooks/useConnectionTimout';
 import { useDebugMode } from '@/hooks/useDebug';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '../livekit/scroll-area/scroll-area';
+import { useRemoteParticipants } from '@livekit/components-react';
+import { useBudgetSankey } from '@/hooks/useBudgetSankey';
+import { BudgetSankey } from '@/components/app/BudgetSankey';
 
 const MotionBottom = motion.create('div');
 
@@ -71,6 +74,8 @@ export const SessionView = ({
 
   const messages = useChatMessages();
   const [chatOpen, setChatOpen] = useState(false);
+  useRemoteParticipants();
+  const { nodes, links } = useBudgetSankey();
 
   const controls: ControlBarControls = {
     leave: true,
@@ -79,6 +84,8 @@ export const SessionView = ({
     camera: appConfig.supportsVideoInput,
     screenShare: appConfig.supportsVideoInput,
   };
+
+  const sankeyVisible = Boolean(nodes && links && links.length > 0);
 
   return (
     <section className="bg-background relative z-10 h-full w-full overflow-hidden" {...props}>
@@ -100,7 +107,16 @@ export const SessionView = ({
       </div>
 
       {/* Tile Layout */}
-      <TileLayout chatOpen={chatOpen} />
+      <TileLayout chatOpen={chatOpen} sankeyVisible={sankeyVisible} />
+
+      {/* Budget Sankey (if provided by agent tool) */}
+      {sankeyVisible && (
+        <div className="pointer-events-auto fixed inset-0 z-50 grid place-items-center">
+          <div className="w-[min(90vw,900px)] max-h-[80vh] overflow-auto rounded-lg border bg-background/80 p-4 backdrop-blur-md shadow-lg">
+            <BudgetSankey nodes={nodes!} links={links!} />
+          </div>
+        </div>
+      )}
 
       {/* Bottom */}
       <MotionBottom
