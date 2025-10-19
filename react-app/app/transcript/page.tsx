@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { readTranscript, clearTranscript, type TranscriptItem } from '@/lib/transcript';
-import { readSankey, clearSankey } from '@/lib/sankey';
+import { readTranscript, type TranscriptItem } from '@/lib/transcript';
+import { readSankey } from '@/lib/sankey';
 import { BudgetSankey } from '@/components/app/BudgetSankey';
 
 export default function TranscriptPage() {
@@ -12,6 +12,9 @@ export default function TranscriptPage() {
   const [hasSankey, setHasSankey] = useState(false);
   const [sankeyNodes, setSankeyNodes] = useState<any[] | null>(null);
   const [sankeyLinks, setSankeyLinks] = useState<any[] | null>(null);
+  const [summary, setSummary] = useState<string | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState<boolean>(true);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   useEffect(() => {
     const payload = readTranscript();
@@ -29,36 +32,69 @@ export default function TranscriptPage() {
     }
   }, []);
 
+  useEffect(() => {
+    const run = async () => {
+      if (!items || items.length === 0) {
+        setSummary(null);
+        setSummaryLoading(false);
+        return;
+      }
+      try {
+        setSummaryLoading(true);
+        setSummaryError(null);
+        const body: any = { items };
+        if (hasSankey && sankeyNodes && sankeyLinks) {
+          body.sankey = { nodes: sankeyNodes, links: sankeyLinks };
+        }
+        const res = await fetch('/api/summary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const json = await res.json();
+        setSummary(typeof json?.summary === 'string' ? json.summary : null);
+      } catch (e) {
+        setSummaryError('Unable to generate summary right now.');
+        setSummary(null);
+      } finally {
+        setSummaryLoading(false);
+      }
+    };
+    run();
+  }, [items, hasSankey, sankeyNodes, sankeyLinks]);
+
   const title = useMemo(() => {
     if (!endedAt) return 'Conversation Transcript';
     const d = new Date(endedAt);
     return `Conversation Transcript – ${d.toLocaleString()}`;
   }, [endedAt]);
 
-  const handleClear = () => {
-    clearTranscript();
-    clearSankey();
-    setItems([]);
-    setHasSankey(false);
-  };
-
   return (
     <main className="mx-auto max-w-2xl px-4 py-10">
       <header className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-semibold">{title}</h1>
         <div className="flex gap-2">
-          <button
-            onClick={handleClear}
-            className="rounded-md border px-3 py-1 text-sm"
-            title="Clear saved transcript"
-          >
-            Clear
-          </button>
           <Link href="/" className="rounded-md bg-black px-3 py-1 text-sm text-white">
             Back home
           </Link>
         </div>
       </header>
+
+      {/* Summary */}
+      <section className="mb-8">
+        <h2 className="mb-2 text-lg font-semibold">Summary</h2>
+        <div className="rounded-lg border bg-background/80 p-4 backdrop-blur-sm">
+          {summaryLoading ? (
+            <p className="text-sm text-muted-foreground">Summarizing…</p>
+          ) : summaryError ? (
+            <p className="text-sm text-red-600">{summaryError}</p>
+          ) : summary ? (
+            <p className="whitespace-pre-wrap text-sm leading-6">{summary}</p>
+          ) : (
+            <p className="text-sm text-muted-foreground">No summary available.</p>
+          )}
+        </div>
+      </section>
 
       {!items || items.length === 0 ? (
         <p className="text-muted-foreground">No transcript available.</p>
