@@ -16,12 +16,24 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
   const [step, setStep] = useState<OnboardingStep>('welcome');
   const [fadeState, setFadeState] = useState<'in' | 'out'>('out');
   const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<
+    'onboarding_vis_1.mp4' | 'onboarding_vid_2.mp4'
+  >('onboarding_vis_1.mp4');
 
   // Fade in on mount and step changes
   useEffect(() => {
     setFadeState('out');
     const timer = setTimeout(() => setFadeState('in'), 100);
     return () => clearTimeout(timer);
+  }, [step]);
+
+  // Randomize video selection when entering video step
+  useEffect(() => {
+    if (step === 'video') {
+      // 1/3 chance to show onboarding_vid_2.mp4, otherwise show onboarding_vis_1.mp4
+      const randomValue = Math.random();
+      setSelectedVideo(randomValue < 0.15 ? 'onboarding_vid_2.mp4' : 'onboarding_vis_1.mp4');
+    }
   }, [step]);
 
   const handleStart = () => {
@@ -256,6 +268,7 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
   }
 
   if (step === 'video') {
+    console.log('Rendering video step with selected video:', selectedVideo);
     return (
       <div
         className={`flex h-screen w-full items-center justify-center bg-black transition-opacity duration-500 ${
@@ -264,12 +277,13 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
       >
         <div className="relative h-full w-full">
           <video
+            key={selectedVideo}
             autoPlay
             playsInline
             onEnded={handleVideoEnd}
             className="h-full w-full object-cover"
           >
-            <source src="/onboarding_vis_1.mp4" type="video/mp4" />
+            <source src={`/${selectedVideo}`} type="video/mp4" />
             Your browser does not support the video tag.
           </video>
 
