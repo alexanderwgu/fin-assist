@@ -19,8 +19,15 @@ export const revalidate = 0;
 
 export async function POST(req: Request) {
   try {
+    console.debug('[connection-details] Env presence check', {
+      LIVEKIT_URL: Boolean(LIVEKIT_URL),
+      LIVEKIT_API_KEY: Boolean(API_KEY),
+      LIVEKIT_API_SECRET: Boolean(API_SECRET),
+    });
+
     if (LIVEKIT_URL === undefined || API_KEY === undefined || API_SECRET === undefined) {
       // Return a mock response for demo mode
+      console.warn('[connection-details] Missing env(s). Returning demo connection details.');
       return NextResponse.json({
         serverUrl: 'ws://localhost:7880',
         roomName: 'demo-room',
@@ -31,6 +38,7 @@ export async function POST(req: Request) {
 
     // Parse agent configuration from request body
     const body = await req.json();
+    console.debug('[connection-details] Request body', body);
     const agentName: string = body?.room_config?.agents?.[0]?.agent_name;
     const sessionMode: 'budgeting' | 'hotline' | undefined = body?.session_mode;
 
@@ -58,13 +66,21 @@ export async function POST(req: Request) {
       participantToken: participantToken,
       participantName,
     };
+    console.debug('[connection-details] Responding with connection details', {
+      serverUrl: data.serverUrl,
+      roomName: data.roomName,
+      participantName: data.participantName,
+      hasToken: Boolean(data.participantToken),
+      agentName,
+      sessionMode,
+    });
     const headers = new Headers({
       'Cache-Control': 'no-store',
     });
     return NextResponse.json(data, { headers });
   } catch (error) {
     if (error instanceof Error) {
-      console.error(error);
+      console.error('[connection-details] Error', error);
       return new NextResponse(error.message, { status: 500 });
     }
   }

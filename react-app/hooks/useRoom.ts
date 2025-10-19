@@ -46,6 +46,10 @@ export function useRoom(appConfig: AppConfig) {
         );
 
         try {
+          console.debug('[useRoom] Fetching connection details from', url.toString(), {
+            sandboxId: appConfig.sandboxId,
+            agentName: appConfig.agentName,
+          });
           const res = await fetch(url.toString(), {
             method: 'POST',
             headers: {
@@ -61,7 +65,9 @@ export function useRoom(appConfig: AppConfig) {
               session_mode: selectedModeRef.current,
             }),
           });
-          return await res.json();
+          const json = await res.json();
+          console.debug('[useRoom] Received connection details', json);
+          return json;
         } catch (error) {
           console.error('Error fetching connection details:', error);
           throw new Error('Error fetching connection details!');
@@ -75,22 +81,9 @@ export function useRoom(appConfig: AppConfig) {
       setIsSessionActive(true);
       selectedModeRef.current = mode;
 
+      console.debug('[useRoom] startSession called with mode:', mode);
       if (room.state === 'disconnected') {
         const { isPreConnectBufferEnabled } = appConfig;
-
-        // Check if LiveKit credentials are available
-        const hasLiveKitConfig = process.env.NEXT_PUBLIC_LIVEKIT_URL ||
-                                process.env.LIVEKIT_URL ||
-                                process.env.LIVEKIT_API_KEY;
-
-        if (!hasLiveKitConfig) {
-          // Show demo mode when LiveKit is not configured
-          toastAlert({
-            title: 'Demo Mode',
-            description: 'LiveKit is not configured. Running in demo mode.',
-          });
-          return;
-        }
 
         Promise.all([
           room.localParticipant.setMicrophoneEnabled(true, undefined, {
@@ -98,9 +91,25 @@ export function useRoom(appConfig: AppConfig) {
           }),
           tokenSource
             .fetch({ agentName: appConfig.agentName })
-            .then((connectionDetails) =>
-              room.connect(connectionDetails.serverUrl, connectionDetails.participantToken)
-            ),
+            .then((connectionDetails) => {
+              console.debug('[useRoom] Connecting to room', {
+                serverUrl: connectionDetails.serverUrl,
+                hasToken: Boolean(connectionDetails.participantToken),
+              });
+              // If server returned demo fallback, show demo toast and do not connect
+              if (
+                typeof connectionDetails.participantToken === 'string' &&
+                connectionDetails.participantToken === 'demo-token'
+              ) {
+                toastAlert({
+                  title: 'Demo Mode',
+                  description: 'Server returned demo credentials. Configure LiveKit env vars.',
+                });
+                console.warn('[useRoom] Demo Mode: server returned demo credentials');
+                return;
+              }
+              return room.connect(connectionDetails.serverUrl, connectionDetails.participantToken);
+            }),
         ]).catch((error) => {
           if (aborted.current) {
             // Once the effect has cleaned up after itself, drop any errors
@@ -111,6 +120,7 @@ export function useRoom(appConfig: AppConfig) {
             return;
           }
 
+          console.error('[useRoom] Connection error', error);
           toastAlert({
             title: 'Connection Error',
             description: 'Unable to connect to the voice agent. Please check your configuration.',
