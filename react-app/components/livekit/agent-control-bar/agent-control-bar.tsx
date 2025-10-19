@@ -194,17 +194,6 @@ export function AgentControlBar({
           >
             {isTrackingEnabled ? 'Tracking On' : 'Tracking Off'}
           </Toggle>
-
-          {/* Toggle Overlay */}
-          <Toggle
-            size="default"
-            variant={isOverlayVisible ? 'default' : 'secondary'}
-            aria-label="Toggle overlay"
-            pressed={isOverlayVisible}
-            onPressedChange={setOverlayVisible}
-          >
-            {isOverlayVisible ? 'Overlay On' : 'Overlay Off'}
-          </Toggle>
         </div>
 
         {/* Disconnect */}

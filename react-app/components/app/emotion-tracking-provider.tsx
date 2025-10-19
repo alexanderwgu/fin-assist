@@ -6,20 +6,16 @@ import { RoomContext } from '@livekit/components-react';
 import {
   FaceLandmarker,
   FilesetResolver,
-  DrawingUtils,
 } from '@mediapipe/tasks-vision';
 
 type SentimentLabel = 'neutral' | 'attentive' | 'uncertain' | 'stressed';
 
 interface EmotionTrackingContextValue {
   isTrackingEnabled: boolean;
-  isOverlayVisible: boolean;
   lastSentiment?: { label: SentimentLabel; confidence: number; at: number };
   latestLandmarks?: Array<{ x: number; y: number }> | null;
   localStream: MediaStream | null;
   enableTracking: (enabled: boolean) => void;
-  setOverlayVisible: (visible: boolean) => void;
-  setCanvasRef: (ref: HTMLCanvasElement | null) => void;
 }
 
 const EmotionTrackingContext = createContext<EmotionTrackingContextValue | undefined>(undefined);
@@ -28,7 +24,6 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
   const room = useContext(RoomContext);
 
   const [isTrackingEnabled, setIsTrackingEnabled] = useState(false);
-  const [isOverlayVisible, setIsOverlayVisible] = useState(false);
   const [lastSentiment, setLastSentiment] = useState<{
     label: SentimentLabel;
     confidence: number;
@@ -39,7 +34,6 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
 
   const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
   const lastAnalysisRef = useRef<number>(0);
   const detectionLoopRef = useRef<number | null>(null);
 
@@ -110,7 +104,7 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
 
   // Continuous detection loop that reads from canvas
   useEffect(() => {
-    if (!isTrackingEnabled || !isOverlayVisible || !canvasRef.current || !localStream) {
+    if (!isTrackingEnabled || !canvasRef.current || !localStream) {
       if (detectionLoopRef.current) {
         cancelAnimationFrame(detectionLoopRef.current);
         detectionLoopRef.current = null;
@@ -133,7 +127,7 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
         }
 
         const now = performance.now();
-        // Run detection every ~100ms for responsive overlay (was 500ms)
+        // Run detection every ~100ms for responsive emotion updates
         if (now - lastAnalysisRef.current < 100) {
           detectionLoopRef.current = requestAnimationFrame(runDetectionLoop);
           return;
@@ -149,7 +143,7 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
             const s = computeSentiment(flat);
             setLastSentiment({ label: s.label, confidence: s.confidence, at: Date.now() });
 
-            // Publish to room data channel periodically (every 10-15s, separate from overlay updates)
+            // Publish to room data channel periodically (every 10-15s)
             if (room && room.localParticipant && now - lastPublishTime > 12000) {
               const payload = JSON.stringify({
                 type: 'emotion_update',
@@ -185,7 +179,7 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
         detectionLoopRef.current = null;
       }
     };
-  }, [isTrackingEnabled, isOverlayVisible, canvasRef, localStream, loadLandmarker, room, computeSentiment]);
+  }, [isTrackingEnabled, canvasRef, localStream, loadLandmarker, room, computeSentiment]);
 
   // Auto-disable if local camera stream ends
   useEffect(() => {
@@ -204,29 +198,17 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
 
   const setCanvasRef = useCallback((ref: HTMLCanvasElement | null) => {
     canvasRef.current = ref;
-    if (ref && localStream && !videoRef.current) {
-      const video = document.createElement('video');
-      video.muted = true;
-      video.playsInline = true;
-      video.autoplay = true;
-      video.srcObject = localStream;
-      videoRef.current = video;
-      video.play().catch(() => {});
-    }
-  }, [localStream]);
+  }, []);
 
   const value: EmotionTrackingContextValue = useMemo(
     () => ({
       isTrackingEnabled,
-      isOverlayVisible,
       lastSentiment,
       latestLandmarks,
       localStream,
       enableTracking,
-      setOverlayVisible: setIsOverlayVisible,
-      setCanvasRef,
     }),
-    [isTrackingEnabled, isOverlayVisible, lastSentiment, latestLandmarks, localStream, enableTracking, setCanvasRef]
+    [isTrackingEnabled, lastSentiment, latestLandmarks, localStream, enableTracking]
   );
 
   return <EmotionTrackingContext.Provider value={value}>{children}</EmotionTrackingContext.Provider>;
@@ -236,139 +218,6 @@ export function useEmotionTracking() {
   const ctx = useContext(EmotionTrackingContext);
   if (!ctx) throw new Error('useEmotionTracking must be used within EmotionTrackingProvider');
   return ctx;
-}
-
-export function EmotionOverlayCanvas({ className }: { className?: string }) {
-  const { isTrackingEnabled, isOverlayVisible, latestLandmarks, localStream, setCanvasRef } = useEmotionTracking();
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  // Draw video frame and landmarks in real-time
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || !isTrackingEnabled || !isOverlayVisible || !localStream) return;
-
-    const video = document.createElement('video');
-    video.muted = true;
-    video.playsInline = true;
-    video.autoplay = true;
-    video.crossOrigin = 'anonymous';
-    video.srcObject = localStream;
-
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) return;
-
-    let animationId: number;
-    const drawFrame = () => {
-      if (video.readyState >= 2 && canvas.width && canvas.height) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        // Draw only key facial landmarks: eyes, nose, mouth
-        if (latestLandmarks && latestLandmarks.length > 0) {
-          ctx.fillStyle = '#22c55e';
-          ctx.strokeStyle = '#16a34a';
-          ctx.lineWidth = 1.5;
-
-          // Key landmark indices for FaceMesh (468 or 478 points)
-          const keyIndices = [
-            // Left eye: 33, 160, 158, 133, 153, 144
-            33, 160, 158, 133, 153, 144,
-            // Right eye: 362, 385, 387, 263, 373, 380
-            362, 385, 387, 263, 373, 380,
-            // Nose: 1, 2, 98, 326, 94
-            1, 2, 98, 326, 94,
-            // Mouth: 13, 14, 78, 308, 39, 269
-            13, 14, 78, 308, 39, 269,
-          ];
-
-          keyIndices.forEach((idx) => {
-            if (latestLandmarks[idx]) {
-              const p = latestLandmarks[idx];
-              const x = p.x * canvas.width;
-              const y = p.y * canvas.height;
-              ctx.beginPath();
-              ctx.arc(x, y, 2.5, 0, 2 * Math.PI);
-              ctx.fill();
-              ctx.stroke();
-            }
-          });
-
-          // Draw eye connections
-          const drawLine = (idx1: number, idx2: number) => {
-            if (latestLandmarks[idx1] && latestLandmarks[idx2]) {
-              const p1 = latestLandmarks[idx1];
-              const p2 = latestLandmarks[idx2];
-              ctx.beginPath();
-              ctx.moveTo(p1.x * canvas.width, p1.y * canvas.height);
-              ctx.lineTo(p2.x * canvas.width, p2.y * canvas.height);
-              ctx.strokeStyle = '#22c55e';
-              ctx.lineWidth = 1;
-              ctx.stroke();
-            }
-          };
-
-          // Left eye outline
-          drawLine(33, 160);
-          drawLine(160, 158);
-          drawLine(158, 133);
-          drawLine(133, 153);
-          drawLine(153, 144);
-          drawLine(144, 33);
-
-          // Right eye outline
-          drawLine(362, 385);
-          drawLine(385, 387);
-          drawLine(387, 263);
-          drawLine(263, 373);
-          drawLine(373, 380);
-          drawLine(380, 362);
-
-          // Mouth outline
-          drawLine(13, 14);
-          drawLine(14, 78);
-          drawLine(78, 308);
-          drawLine(308, 39);
-          drawLine(39, 269);
-          drawLine(269, 13);
-
-          // Nose
-          drawLine(1, 98);
-          drawLine(98, 326);
-          drawLine(2, 326);
-        }
-      }
-      animationId = requestAnimationFrame(drawFrame);
-    };
-
-    video.play().catch(() => {});
-    animationId = requestAnimationFrame(drawFrame);
-
-    return () => {
-      cancelAnimationFrame(animationId);
-      video.pause();
-      video.srcObject = null;
-    };
-  }, [isTrackingEnabled, isOverlayVisible, latestLandmarks, localStream]);
-
-  // Keep canvas sized to its parent
-  const resizeRef = useCallback((node: HTMLCanvasElement | null) => {
-    if (!node) return;
-    canvasRef.current = node;
-    setCanvasRef(node);
-    const resize = () => {
-      const parent = node.parentElement;
-      if (!parent) return;
-      const rect = parent.getBoundingClientRect();
-      node.width = Math.max(1, Math.floor(rect.width));
-      node.height = Math.max(1, Math.floor(rect.height));
-    };
-    resize();
-    const ro = new ResizeObserver(resize);
-    ro.observe(node.parentElement!);
-    return () => ro.disconnect();
-  }, [setCanvasRef]);
-
-  if (!isTrackingEnabled || !isOverlayVisible) return null;
-  return <canvas ref={resizeRef} className={className} />;
 }
 
 
