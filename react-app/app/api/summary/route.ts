@@ -30,7 +30,10 @@ export async function POST(req: Request) {
     });
 
     if (!Array.isArray(items) || items.length === 0) {
-      return NextResponse.json({ summary: 'No transcript to summarize.' }, { headers: { 'Cache-Control': 'no-store' } });
+      return NextResponse.json(
+        { summary: 'No transcript to summarize.' },
+        { headers: { 'Cache-Control': 'no-store' } }
+      );
     }
 
     if (!GEMINI_API_KEY) {
@@ -47,9 +50,10 @@ export async function POST(req: Request) {
       const { generateText } = await import('ai');
       const { createGoogleGenerativeAI } = await import('@ai-sdk/google');
       const google = createGoogleGenerativeAI({ apiKey: GEMINI_API_KEY });
-      const modelInstance: any = google('models/' + MODEL);
-      const result: any = await generateText({ model: modelInstance, prompt });
-      const sdkText: string | undefined = typeof result?.text === 'string' ? result.text : undefined;
+      const modelInstance = google('models/' + MODEL);
+      const result = await generateText({ model: modelInstance, prompt });
+      const sdkText: string | undefined =
+        typeof result?.text === 'string' ? result.text : undefined;
       console.debug('[summary] ai-sdk ok', { preview100: sdkText ? sdkText.slice(0, 100) : '' });
       if (sdkText && sdkText.trim().length > 0) {
         const headers = new Headers({ 'Cache-Control': 'no-store' });
@@ -74,18 +78,23 @@ export async function POST(req: Request) {
   }
 }
 
-function buildPrompt(items: TranscriptItem[], nodes: SankeyNode[] | null, links: SankeyLink[] | null): string {
+function buildPrompt(
+  items: TranscriptItem[],
+  nodes: SankeyNode[] | null,
+  links: SankeyLink[] | null
+): string {
   const convo = items
     .slice(-120)
     .map((m) => `${m.origin === 'local' ? 'User' : 'Agent'}: ${m.message}`)
     .join('\n');
 
-  const sankeyBlock = nodes && links && links.length
-    ? `\n\nBudget Sankey (most recent):\nNodes: ${nodes.map((n) => n.id).join(', ')}\nTop Flows: ${links
-        .slice(0, 10)
-        .map((l) => `${l.source} -> ${l.target}: ${l.value}`)
-        .join('; ')}`
-    : '';
+  const sankeyBlock =
+    nodes && links && links.length
+      ? `\n\nBudget Sankey (most recent):\nNodes: ${nodes.map((n) => n.id).join(', ')}\nTop Flows: ${links
+          .slice(0, 10)
+          .map((l) => `${l.source} -> ${l.target}: ${l.value}`)
+          .join('; ')}`
+      : '';
 
   return (
     'You are a calm, supportive financial mentor. Summarize the conversation below in 4-6 short bullet points (plain text, no titles):\n' +
@@ -99,15 +108,23 @@ function buildPrompt(items: TranscriptItem[], nodes: SankeyNode[] | null, links:
   );
 }
 
-function buildFallbackSummary(items: TranscriptItem[], nodes: SankeyNode[] | null, links: SankeyLink[] | null): string {
+function buildFallbackSummary(
+  items: TranscriptItem[],
+  nodes: SankeyNode[] | null,
+  links: SankeyLink[] | null
+): string {
   const lastUser = [...items].reverse().find((m) => m.origin === 'local');
-  const hintedNeed = lastUser?.message ? `User focus: ${truncate(lastUser.message, 140)}` : 'User focus: general budgeting support';
+  const hintedNeed = lastUser?.message
+    ? `User focus: ${truncate(lastUser.message, 140)}`
+    : 'User focus: general budgeting support';
   const hasSankey = Boolean(nodes && links && links.length);
   return [
     '• Discussed financial goals and current concerns.',
     `• ${hintedNeed}.`,
     '• Provided calm, step-by-step guidance.',
-    hasSankey ? '• Reviewed budget flows and prioritized key spending areas.' : '• Encouraged simple budgeting steps and next actions.',
+    hasSankey
+      ? '• Reviewed budget flows and prioritized key spending areas.'
+      : '• Encouraged simple budgeting steps and next actions.',
     '• Next steps: set a weekly check-in and track one spending category.',
   ].join('\n');
 }
@@ -116,5 +133,3 @@ function truncate(text: string, max: number): string {
   if (text.length <= max) return text;
   return text.slice(0, max - 1) + '…';
 }
-
-

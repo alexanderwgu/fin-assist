@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { BudgetSankey } from '@/components/app/BudgetSankey';
 import type { D3SankeyLink, D3SankeyNode } from '@/hooks/useBudgetSankey';
-import { clearSankey, readSankey } from '@/lib/sankey';
-import { type TranscriptItem, clearTranscript, readTranscript } from '@/lib/transcript';
+import { readSankey } from '@/lib/sankey';
+import { type TranscriptItem, readTranscript } from '@/lib/transcript';
 
 export default function TranscriptPage() {
   const [items, setItems] = useState<TranscriptItem[] | null>(null);
@@ -43,7 +43,10 @@ export default function TranscriptPage() {
       try {
         setSummaryLoading(true);
         setSummaryError(null);
-        const body: any = { items };
+        const body: {
+          items: TranscriptItem[];
+          sankey?: { nodes: D3SankeyNode[]; links: D3SankeyLink[] };
+        } = { items };
         if (hasSankey && sankeyNodes && sankeyLinks) {
           body.sankey = { nodes: sankeyNodes, links: sankeyLinks };
         }
@@ -54,7 +57,7 @@ export default function TranscriptPage() {
         });
         const json = await res.json();
         setSummary(typeof json?.summary === 'string' ? json.summary : null);
-      } catch (e) {
+      } catch {
         setSummaryError('Unable to generate summary right now.');
         setSummary(null);
       } finally {
@@ -77,7 +80,7 @@ export default function TranscriptPage() {
         <div className="flex gap-2">
           <Link
             href="/"
-            className="rounded-md bg-primary px-3 py-1 text-sm text-primary-foreground transition-colors hover:bg-primary/90"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md px-3 py-1 text-sm transition-colors"
           >
             Back home
           </Link>
@@ -87,15 +90,15 @@ export default function TranscriptPage() {
       {/* Summary */}
       <section className="mb-8">
         <h2 className="mb-2 text-lg font-semibold">Summary</h2>
-        <div className="rounded-lg border bg-background/80 p-4 backdrop-blur-sm">
+        <div className="bg-background/80 rounded-lg border p-4 backdrop-blur-sm">
           {summaryLoading ? (
-            <p className="text-sm text-muted-foreground">Summarizing…</p>
+            <p className="muted-foreground text-sm">Summarizing…</p>
           ) : summaryError ? (
-            <p className="text-sm text-destructive">{summaryError}</p>
+            <p className="destructive text-sm">{summaryError}</p>
           ) : summary ? (
-            <p className="whitespace-pre-wrap text-sm leading-6">{summary}</p>
+            <p className="text-sm leading-6 whitespace-pre-wrap">{summary}</p>
           ) : (
-            <p className="text-sm text-muted-foreground">No summary available.</p>
+            <p className="muted-foreground text-sm">No summary available.</p>
           )}
         </div>
       </section>
@@ -103,7 +106,7 @@ export default function TranscriptPage() {
       {hasSankey && sankeyNodes && sankeyLinks && (
         <section className="mb-8">
           <h2 className="mb-3 text-lg font-semibold">Budget Flow</h2>
-          <div className="rounded-lg border bg-background/80 p-4 backdrop-blur-sm">
+          <div className="bg-background/80 rounded-lg border p-4 backdrop-blur-sm">
             <BudgetSankey nodes={sankeyNodes} links={sankeyLinks} />
           </div>
         </section>
@@ -115,7 +118,7 @@ export default function TranscriptPage() {
         <ol className="space-y-3">
           {items.map((m, idx) => (
             <li key={idx} className="flex flex-col gap-1">
-              <div className="text-xs text-muted-foreground">
+              <div className="muted-foreground text-xs">
                 <span className="font-mono">
                   {new Date(m.timestamp).toLocaleTimeString(undefined, { timeStyle: 'short' })}
                 </span>
@@ -123,8 +126,8 @@ export default function TranscriptPage() {
               <div
                 className={
                   m.origin === 'local'
-                    ? 'ml-auto max-w-[80%] rounded-2xl bg-muted px-3 py-2'
-                    : 'mr-auto max-w-[80%] rounded-2xl bg-secondary px-3 py-2'
+                    ? 'bg-muted ml-auto max-w-[80%] rounded-2xl px-3 py-2'
+                    : 'bg-secondary mr-auto max-w-[80%] rounded-2xl px-3 py-2'
                 }
               >
                 {m.message}
@@ -133,7 +136,6 @@ export default function TranscriptPage() {
           ))}
         </ol>
       )}
-
     </main>
   );
 }

@@ -207,10 +207,6 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
     }
   }, []);
 
-  const setCanvasRef = useCallback((ref: HTMLCanvasElement | null) => {
-    canvasRef.current = ref;
-  }, []);
-
   const value: EmotionTrackingContextValue = useMemo(
     () => ({
       isTrackingEnabled,
