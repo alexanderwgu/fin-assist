@@ -125,6 +125,11 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
 
       const videoEl = processingVideoRef.current!;
       // Ensure the element has current data and dimensions before detection
+      if (videoEl.paused) {
+        try {
+          await videoEl.play();
+        } catch {}
+      }
       if (videoEl.readyState < 2) {
         await new Promise<void>((resolve) => {
           const onLoaded = () => resolve();
@@ -136,8 +141,19 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
         await new Promise((r) => setTimeout(r, 50));
         if (!videoEl.videoWidth || !videoEl.videoHeight) return;
       }
+      if (typeof (videoEl as any).requestVideoFrameCallback === 'function') {
+        await new Promise<void>((resolve) =>
+          (videoEl as any).requestVideoFrameCallback(() => resolve())
+        );
+      }
       const now = performance.now();
-      const res = await landmarker.detectForVideo(videoEl, now);
+      let res;
+      try {
+        res = await landmarker.detectForVideo(videoEl, now);
+      } catch (err) {
+        // If detect fails (e.g., transient readiness/wasm issue), skip this cycle
+        return;
+      }
       const face0 = res.faceLandmarks?.[0];
       if (face0 && face0.length > 0) {
         const flat = face0.map((p) => ({ x: p.x, y: p.y }));
