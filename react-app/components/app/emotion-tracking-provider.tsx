@@ -249,6 +249,7 @@ export function EmotionOverlayCanvas({ className }: { className?: string }) {
     video.muted = true;
     video.playsInline = true;
     video.autoplay = true;
+    video.crossOrigin = 'anonymous';
     video.srcObject = localStream;
 
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -259,11 +260,19 @@ export function EmotionOverlayCanvas({ className }: { className?: string }) {
       if (video.readyState >= 2 && canvas.width && canvas.height) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        // Draw landmarks overlay
+        // Draw landmarks overlay with simple circles
         if (latestLandmarks && latestLandmarks.length > 0) {
-          const drawingUtils = new DrawingUtils(ctx);
-          const scaledPoints = latestLandmarks.map((p) => ({ x: p.x * canvas.width, y: p.y * canvas.height }));
-          drawingUtils.drawLandmarks(scaledPoints as any, { color: '#22c55e', lineWidth: 1, radius: 2 });
+          ctx.fillStyle = '#22c55e';
+          ctx.strokeStyle = '#16a34a';
+          ctx.lineWidth = 1;
+          latestLandmarks.forEach((p) => {
+            const x = p.x * canvas.width;
+            const y = p.y * canvas.height;
+            ctx.beginPath();
+            ctx.arc(x, y, 2, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+          });
         }
       }
       animationId = requestAnimationFrame(drawFrame);

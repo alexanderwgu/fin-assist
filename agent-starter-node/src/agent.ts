@@ -24,27 +24,6 @@ class Assistant extends voice.Agent {
       instructions,
       // pass tools to the agent so LLM can call them
       tools: tools as any,
-
-      // To add tools, specify `tools` in the constructor.
-      // Here's an example that adds a simple weather tool.
-      // You also have to add `import { llm } from '@livekit/agents' and `import { z } from 'zod'` to the top of this file
-      // tools: {
-      //   getWeather: llm.tool({
-      //     description: `Use this tool to look up current weather information in the given location.
-      //
-      //     If the location is not supported by the weather service, the tool will indicate this. You must tell the user the location's weather is unavailable.`,
-      //     parameters: z.object({
-      //       location: z
-      //         .string()
-      //         .describe('The location to look up weather information for (e.g. city name)'),
-      //     }),
-      //     execute: async ({ location }) => {
-      //       console.log(`Looking up weather for ${location}`);
-      //
-      //       return 'sunny with a temperature of 70 degrees.';
-      //     },
-      //   }),
-      // },
     });
   }
 }
@@ -94,16 +73,6 @@ export default defineAgent({
       turnDetection: new livekit.turnDetector.MultilingualModel(),
       vad: ctx.proc.userData.vad! as silero.VAD,
     });
-
-    // To use a realtime model instead of a voice pipeline, use the following session setup instead.
-    // (Note: This is for the OpenAI Realtime API. For other providers, see https://docs.livekit.io/agents/models/realtime/))
-    // 1. Install '@livekit/agents-plugin-openai'
-    // 2. Set OPENAI_API_KEY in .env.local
-    // 3. Add import `import * as openai from '@livekit/agents-plugin-openai'` to the top of this file
-    // 4. Use the following session setup instead of the version above
-    // const session = new voice.AgentSession({
-    //   llm: new openai.realtime.RealtimeModel({ voice: 'marin' }),
-    // });
 
     // On error events, switch only the relevant subsystem (TTS vs STT)
     let ttsUsingFallback = false;
@@ -166,6 +135,22 @@ export default defineAgent({
     // Join the room first so that room name/metadata are available for mode selection
     await ctx.connect();
 
+    // Track emotion updates from the client's MediaPipe detector
+    let latestEmotion: { label: string; confidence: number; at: number } | null = null;
+    const room = ctx.room as any;
+    room.on('dataReceived', (data: any) => {
+      try {
+        const str = new TextDecoder().decode(data.data);
+        const payload = JSON.parse(str);
+        if (payload.type === 'emotion_update' && payload.sentiment) {
+          latestEmotion = { ...payload.sentiment, at: payload.at };
+          console.log(`[Emotion] Detected ${payload.sentiment.label} (confidence: ${payload.sentiment.confidence.toFixed(2)})`);
+        }
+      } catch {
+        // Ignore parsing errors
+      }
+    });
+
     // Determine session mode from room name suffix (set by server), e.g., `_budgeting` or `_hotline`
     const roomName = ctx.room?.name ?? '';
     const modeFromRoom: SessionMode | undefined = roomName.endsWith('_budgeting')
@@ -174,12 +159,24 @@ export default defineAgent({
         ? 'hotline'
         : undefined;
 
-    const instructions = getPromptForMode(modeFromRoom);
+    let emotionAwareInstructions = getPromptForMode(modeFromRoom);
+    // Enhance the system instructions with emotion awareness capability
+    emotionAwareInstructions += `
+
+## Facial Expression & Emotion Tracking (Optional)
+
+If the user has enabled emotion tracking (visible in control bar):
+- You can see their facial landmarks and detected sentiment in real-time.
+- Current sentiment detection shows: neutral, attentive, uncertain, or stressed.
+- Use this to enhance empathy: "I notice you seem [stressed/uncertain]—that's normal, let me help."
+- If user asks if you can see them, confirm: "Yes, I can see your facial landmarks and they show you're looking [sentiment]. You can turn off tracking and overlay in the control bar if you'd prefer privacy."
+- Reference tracking capability only if the user explicitly asks or seems interested; keep focus on their financial goals.`;
+
     const tools = getToolsForMode(modeFromRoom as SessionMode | undefined, ctx.room as any);
 
     // Start the session, which initializes the voice pipeline and warms up the models
     await session.start({
-      agent: new Assistant(instructions, tools),
+      agent: new Assistant(emotionAwareInstructions, tools),
       room: ctx.room,
       inputOptions: {
         // LiveKit Cloud enhanced noise cancellation
