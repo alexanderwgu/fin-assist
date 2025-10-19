@@ -85,6 +85,8 @@ export const SessionView = ({
     screenShare: appConfig.supportsVideoInput,
   };
 
+  const sankeyVisible = Boolean(nodes && links && links.length > 0);
+
   return (
     <section className="bg-background relative z-10 h-full w-full overflow-hidden" {...props}>
       {/* Chat Transcript */}
@@ -105,12 +107,14 @@ export const SessionView = ({
       </div>
 
       {/* Tile Layout */}
-      <TileLayout chatOpen={chatOpen} />
+      <TileLayout chatOpen={chatOpen} sankeyVisible={sankeyVisible} />
 
       {/* Budget Sankey (if provided by agent tool) */}
-      {nodes && links && links.length > 0 && (
-        <div className="fixed right-3 top-3 z-50 w-[min(90vw,700px)] bg-background/80 backdrop-blur-md">
-          <BudgetSankey nodes={nodes} links={links} />
+      {sankeyVisible && (
+        <div className="pointer-events-auto fixed inset-0 z-50 grid place-items-center">
+          <div className="w-[min(90vw,900px)] max-h-[80vh] overflow-auto rounded-lg border bg-background/80 p-4 backdrop-blur-md shadow-lg">
+            <BudgetSankey nodes={nodes!} links={links!} />
+          </div>
         </div>
       )}
 

@@ -71,9 +71,10 @@ export function useLocalTrackRef(source: Track.Source) {
 
 interface TileLayoutProps {
   chatOpen: boolean;
+  sankeyVisible?: boolean;
 }
 
-export function TileLayout({ chatOpen }: TileLayoutProps) {
+export function TileLayout({ chatOpen, sankeyVisible = false }: TileLayoutProps) {
   const {
     state: agentState,
     audioTrack: agentAudioTrack,
@@ -92,7 +93,14 @@ export function TileLayout({ chatOpen }: TileLayoutProps) {
   const videoHeight = agentVideoTrack?.publication.dimensions?.height ?? 0;
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-8 bottom-32 z-50 md:top-12 md:bottom-40">
+    <div
+      className={cn(
+        'pointer-events-none fixed inset-x-0',
+        sankeyVisible
+          ? 'top-auto bottom-16 z-40 md:top-auto md:bottom-24'
+          : 'top-8 bottom-32 z-50 md:top-12 md:bottom-40'
+      )}
+    >
       <div className="relative mx-auto h-full max-w-2xl px-4 md:px-0">
         <div className={cn(classNames.grid)}>
           {/* Agent */}
@@ -116,14 +124,15 @@ export function TileLayout({ chatOpen }: TileLayoutProps) {
                   }}
                   animate={{
                     opacity: 1,
-                    scale: chatOpen ? 1 : 5,
+                    scale: sankeyVisible ? (chatOpen ? 0.9 : 2.5) : chatOpen ? 1 : 5,
                   }}
                   transition={{
                     ...ANIMATION_TRANSITION,
                     delay: animationDelay,
                   }}
                   className={cn(
-                    'bg-background aspect-square h-[90px] rounded-md border border-transparent transition-[border,drop-shadow]',
+                    'bg-background aspect-square rounded-md border border-transparent transition-[border,drop-shadow]',
+                    sankeyVisible ? 'h-[60px]' : 'h-[90px]',
                     chatOpen && 'border-input/50 drop-shadow-lg/10 delay-200'
                   )}
                 >
@@ -175,14 +184,14 @@ export function TileLayout({ chatOpen }: TileLayoutProps) {
                   }}
                   className={cn(
                     'overflow-hidden bg-black drop-shadow-xl/80',
-                    chatOpen ? 'h-[90px]' : 'h-auto w-full'
+                    chatOpen ? (sankeyVisible ? 'h-[60px]' : 'h-[90px]') : 'h-auto w-full'
                   )}
                 >
                   <VideoTrack
                     width={videoWidth}
                     height={videoHeight}
                     trackRef={agentVideoTrack}
-                    className={cn(chatOpen && 'size-[90px] object-cover')}
+                    className={cn(chatOpen && (sankeyVisible ? 'size-[60px] object-cover' : 'size-[90px] object-cover'))}
                   />
                 </MotionContainer>
               )}
