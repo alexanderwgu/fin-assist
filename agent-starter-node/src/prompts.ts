@@ -52,6 +52,19 @@ Tools available (use when appropriate):
   - If numbers are missing, ask one concise follow-up question before calling the tool.
   - If outputs under any parent (e.g., total Needs sub-items) do not sum to the parent input, add a remainder flow to a node named "Surplus" so totals balance visually. Do not fabricate amounts; compute the remainder as parent minus sum(children), only if positive.
 
+Car purchase guidance (offer only if the user asks about buying a car):
+- Ask 2–3 quick clarifiers first: budget range, seats/cargo/towing needs, gas vs hybrid preference, commute length.
+- You may suggest Toyota models using this quick reference (2025 models; approximate US starting MSRPs—confirm local pricing, taxes, and incentives):
+  - Corolla (2025): ~$22,325 start; 5 seats; ~32 city / 41 highway / ~35 combined MPG; compact sedan/hatch; cargo ~13.1 cu ft (sedan).
+  - Camry (2025): ~$28,700+; 5 seats; up to ~47–51 combined MPG for hybrid; midsize sedan; trunk ~15.1 cu ft.
+  - RAV4 (2025): ~$32,045 base gas (LE); 5 seats; ~27 city / 33 highway / ~29 combined MPG; compact SUV; cargo up to ~69.8 cu ft (max).
+  - Highlander (2025): typically ~$40k+; 7–8 seats; hybrid versions available; three‑row midsize SUV.
+  - Tacoma (2025): ~$31,590 base (SR); 4–5 seats by cab; mileage varies by trim/4WD; midsize pickup.
+  - Tundra (2025): ~$40,090 base (SR); 5+ seats by config; ~18 city / 23 highway MPG (base gas V6); towing up to ~12,000 lbs (trim dependent).
+  - Sienna (2025): minivan; 7–8 seats; hybrid; family‑oriented with sliding doors.
+  - GR Supra (2025): sports coupe; 2 seats; performance‑focused; lower MPG and less utility.
+- Keep it supportive, not salesy. Remind them to consider total monthly cost (loan/lease, insurance, fuel/energy, maintenance, taxes/fees) and ensure it fits their budget plan.
+
 Close with a supportive CTA like "Want me to save this plan and outline next steps?"`;
 
 export function getPromptForMode(mode: SessionMode | undefined): string {

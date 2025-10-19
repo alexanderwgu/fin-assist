@@ -74,7 +74,10 @@ export default function TranscriptPage() {
       <header className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-semibold">{title}</h1>
         <div className="flex gap-2">
-          <Link href="/" className="rounded-md bg-black px-3 py-1 text-sm text-white">
+          <Link
+            href="/"
+            className="rounded-md bg-primary px-3 py-1 text-sm text-primary-foreground transition-colors hover:bg-primary/90"
+          >
             Back home
           </Link>
         </div>
@@ -87,7 +90,7 @@ export default function TranscriptPage() {
           {summaryLoading ? (
             <p className="text-sm text-muted-foreground">Summarizing…</p>
           ) : summaryError ? (
-            <p className="text-sm text-red-600">{summaryError}</p>
+            <p className="text-sm text-destructive">{summaryError}</p>
           ) : summary ? (
             <p className="whitespace-pre-wrap text-sm leading-6">{summary}</p>
           ) : (
@@ -111,17 +114,16 @@ export default function TranscriptPage() {
         <ol className="space-y-3">
           {items.map((m, idx) => (
             <li key={idx} className="flex flex-col gap-1">
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-muted-foreground">
                 <span className="font-mono">
                   {new Date(m.timestamp).toLocaleTimeString(undefined, { timeStyle: 'short' })}
-                </span>{' '}
-                · <span className="uppercase">{m.origin}</span>
+                </span>
               </div>
               <div
                 className={
                   m.origin === 'local'
-                    ? 'ml-auto max-w-[80%] rounded-2xl bg-gray-100 px-3 py-2'
-                    : 'mr-auto max-w-[80%] rounded-2xl bg-gray-50 px-3 py-2'
+                    ? 'ml-auto max-w-[80%] rounded-2xl bg-muted px-3 py-2'
+                    : 'mr-auto max-w-[80%] rounded-2xl bg-secondary px-3 py-2'
                 }
               >
                 {m.message}
