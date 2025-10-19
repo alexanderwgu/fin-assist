@@ -131,6 +131,15 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
           <Button onClick={handleStart} size="lg" className="w-full max-w-xs">
             Get Started
           </Button>
+
+          {/* Privacy Notice */}
+          <div className="mt-6 max-w-sm">
+            <p className="text-center text-xs text-muted-foreground/80 leading-relaxed">
+              <span className="font-medium text-white-foreground">Privacy First:</span> No data is stored at all.
+              We prioritize your total privacy and confidentiality and do not collect any data.
+              Your information stays completely secure and is deleted after you exit the app.
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -261,12 +270,20 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
             Your browser does not support the video tag.
           </video>
 
-          {/* Skip button */}
+          {/* Skip/Fast-forward button */}
           <button
             onClick={handleVideoEnd}
-            className="absolute right-8 bottom-8 rounded-lg px-4 py-2 text-sm font-light text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+            className="absolute right-6 bottom-6 flex items-center gap-2 rounded-full bg-white/20 px-6 py-3 text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/30 hover:scale-105 active:scale-95 shadow-lg border border-white/20 animate-pulse hover:animate-none"
           >
-            Skip →
+            <svg
+              className="size-5"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z" />
+              <path d="M20 6v12l1.5-1V7L20 6z" />
+            </svg>
+            <span className="font-medium">Skip Intro</span>
           </button>
         </div>
       </div>
