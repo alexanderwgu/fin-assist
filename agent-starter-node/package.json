@@ -19,7 +19,7 @@
   },
   "engines": {
     "node": ">=22.0.0",
-    "pnpm": ">=10.0.0"
+    "pnpm": ">=9.15.9"
   },
   "devDependencies": {
     "@eslint/js": "^9.34.0",
@@ -39,5 +39,6 @@
     "@livekit/noise-cancellation-node": "^0.1.9",
     "dotenv": "^17.2.1",
     "zod": "^3.25.76"
-  }
+  },
+  "packageManager": "pnpm@9.15.9"
 }
