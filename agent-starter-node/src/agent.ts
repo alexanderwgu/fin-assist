@@ -54,7 +54,7 @@ export default defineAgent({
     proc.userData.vad = await silero.VAD.load();
   },
   entry: async (ctx: JobContext) => {
-    // Set up a voice AI pipeline using OpenAI, Cartesia, AssemblyAI, and the LiveKit turn detector
+    // Set up a voice AI pipeline using Google Gemini, Cartesia, AssemblyAI, and the LiveKit turn detector
     // Configure primary and fallback TTS providers
     const PRIMARY_TTS_MODEL = process.env.PRIMARY_TTS_MODEL || 'elevenlabs/eleven_turbo_v2';
     const PRIMARY_TTS_VOICE = process.env.PRIMARY_TTS_VOICE || '21m00Tcm4TlvDq8ikWAM';
@@ -73,7 +73,7 @@ export default defineAgent({
 
       // A Large Language Model (LLM) is your agent's brain, processing user input and generating a response
       // See all providers at https://docs.livekit.io/agents/models/llm/
-      llm: 'openai/gpt-4.1-mini',
+      llm: 'google/gemini-2.5-flash',
 
       // Text-to-speech (TTS) is your agent's voice, turning the LLM's text into speech that the user can hear
       // See all available models as well as voice selections at https://docs.livekit.io/agents/models/tts/
