@@ -13,6 +13,9 @@ export default function TranscriptPage() {
   const [hasSankey, setHasSankey] = useState(false);
   const [sankeyNodes, setSankeyNodes] = useState<D3SankeyNode[] | null>(null);
   const [sankeyLinks, setSankeyLinks] = useState<D3SankeyLink[] | null>(null);
+  const [summary, setSummary] = useState<string | null>(null);
+  const [summaryLoading, setSummaryLoading] = useState<boolean>(true);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   useEffect(() => {
     const payload = readTranscript();
@@ -30,36 +33,81 @@ export default function TranscriptPage() {
     }
   }, []);
 
+  useEffect(() => {
+    const run = async () => {
+      if (!items || items.length === 0) {
+        setSummary(null);
+        setSummaryLoading(false);
+        return;
+      }
+      try {
+        setSummaryLoading(true);
+        setSummaryError(null);
+        const body: any = { items };
+        if (hasSankey && sankeyNodes && sankeyLinks) {
+          body.sankey = { nodes: sankeyNodes, links: sankeyLinks };
+        }
+        const res = await fetch('/api/summary', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const json = await res.json();
+        setSummary(typeof json?.summary === 'string' ? json.summary : null);
+      } catch (e) {
+        setSummaryError('Unable to generate summary right now.');
+        setSummary(null);
+      } finally {
+        setSummaryLoading(false);
+      }
+    };
+    run();
+  }, [items, hasSankey, sankeyNodes, sankeyLinks]);
+
   const title = useMemo(() => {
     if (!endedAt) return 'Conversation Transcript';
     const d = new Date(endedAt);
     return `Conversation Transcript – ${d.toLocaleString()}`;
   }, [endedAt]);
 
-  const handleClear = () => {
-    clearTranscript();
-    clearSankey();
-    setItems([]);
-    setHasSankey(false);
-  };
-
   return (
     <main className="mx-auto max-w-2xl px-4 py-10">
       <header className="mb-6 flex items-center justify-between">
         <h1 className="text-xl font-semibold">{title}</h1>
         <div className="flex gap-2">
-          <button
-            onClick={handleClear}
-            className="rounded-md border px-3 py-1 text-sm"
-            title="Clear saved transcript"
+          <Link
+            href="/"
+            className="rounded-md bg-primary px-3 py-1 text-sm text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Clear
-          </button>
-          <Link href="/" className="rounded-md bg-black px-3 py-1 text-sm text-white">
             Back home
           </Link>
         </div>
       </header>
+
+      {/* Summary */}
+      <section className="mb-8">
+        <h2 className="mb-2 text-lg font-semibold">Summary</h2>
+        <div className="rounded-lg border bg-background/80 p-4 backdrop-blur-sm">
+          {summaryLoading ? (
+            <p className="text-sm text-muted-foreground">Summarizing…</p>
+          ) : summaryError ? (
+            <p className="text-sm text-destructive">{summaryError}</p>
+          ) : summary ? (
+            <p className="whitespace-pre-wrap text-sm leading-6">{summary}</p>
+          ) : (
+            <p className="text-sm text-muted-foreground">No summary available.</p>
+          )}
+        </div>
+      </section>
+
+      {hasSankey && sankeyNodes && sankeyLinks && (
+        <section className="mb-8">
+          <h2 className="mb-3 text-lg font-semibold">Budget Flow</h2>
+          <div className="rounded-lg border bg-background/80 p-4 backdrop-blur-sm">
+            <BudgetSankey nodes={sankeyNodes} links={sankeyLinks} />
+          </div>
+        </section>
+      )}
 
       {!items || items.length === 0 ? (
         <p className="text-muted-foreground">No transcript available.</p>
@@ -67,17 +115,16 @@ export default function TranscriptPage() {
         <ol className="space-y-3">
           {items.map((m, idx) => (
             <li key={idx} className="flex flex-col gap-1">
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-muted-foreground">
                 <span className="font-mono">
                   {new Date(m.timestamp).toLocaleTimeString(undefined, { timeStyle: 'short' })}
-                </span>{' '}
-                · <span className="uppercase">{m.origin}</span>
+                </span>
               </div>
               <div
                 className={
                   m.origin === 'local'
-                    ? 'ml-auto max-w-[80%] rounded-2xl bg-gray-100 px-3 py-2'
-                    : 'mr-auto max-w-[80%] rounded-2xl bg-gray-50 px-3 py-2'
+                    ? 'ml-auto max-w-[80%] rounded-2xl bg-muted px-3 py-2'
+                    : 'mr-auto max-w-[80%] rounded-2xl bg-secondary px-3 py-2'
                 }
               >
                 {m.message}
@@ -87,14 +134,6 @@ export default function TranscriptPage() {
         </ol>
       )}
 
-      {hasSankey && sankeyNodes && sankeyLinks && (
-        <section className="mt-10">
-          <h2 className="mb-3 text-lg font-semibold">Budget Flow</h2>
-          <div className="bg-background/80 rounded-lg border p-4 backdrop-blur-sm">
-            <BudgetSankey nodes={sankeyNodes} links={sankeyLinks} />
-          </div>
-        </section>
-      )}
     </main>
   );
 }
