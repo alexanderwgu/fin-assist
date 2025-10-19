@@ -1,6 +1,6 @@
 'use client';
 
-import { type HTMLAttributes, useCallback, useState } from 'react';
+import { type HTMLAttributes, useCallback, useMemo, useState } from 'react';
 import { Track } from 'livekit-client';
 import { useChat, useRemoteParticipants } from '@livekit/components-react';
 import { ChatTextIcon, PhoneDisconnectIcon } from '@phosphor-icons/react/dist/ssr';
@@ -13,6 +13,9 @@ import { ChatInput } from './chat-input';
 import { UseInputControlsProps, useInputControls } from './hooks/use-input-controls';
 import { usePublishPermissions } from './hooks/use-publish-permissions';
 import { TrackSelector } from './track-selector';
+import { useChatMessages } from '@/hooks/useChatMessages';
+import { saveTranscript } from '@/lib/transcript';
+import { useRouter } from 'next/navigation';
 
 export interface ControlBarControls {
   leave?: boolean;
@@ -46,6 +49,8 @@ export function AgentControlBar({
   const [chatOpen, setChatOpen] = useState(false);
   const publishPermissions = usePublishPermissions();
   const { isSessionActive, endSession } = useSession();
+  const messages = useChatMessages();
+  const router = useRouter();
 
   const {
     micTrackRef,
@@ -70,10 +75,22 @@ export function AgentControlBar({
     [onChatOpenChange, setChatOpen]
   );
 
+  const transcriptItems = useMemo(() => {
+    return messages.map((m) => ({
+      timestamp: m.timestamp,
+      message: m.message,
+      origin: m.from?.isLocal ? 'local' : 'remote',
+    }));
+  }, [messages]);
+
   const handleDisconnect = useCallback(async () => {
+    try {
+      saveTranscript(transcriptItems);
+    } catch {}
     endSession();
     onDisconnect?.();
-  }, [endSession, onDisconnect]);
+    router.push('/transcript');
+  }, [endSession, onDisconnect, router, transcriptItems]);
 
   const visibleControls = {
     leave: controls?.leave ?? true,
