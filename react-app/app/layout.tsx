@@ -59,6 +59,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
     >
       <head>
         {styles && <style>{styles}</style>}
+        <link rel="icon" href="/favicon.ico" sizes="any" />
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
         <ApplyThemeScript />
