@@ -73,7 +73,7 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+          <div className="bg-background/70 absolute inset-0 backdrop-blur-sm" />
         </div>
 
         <div
@@ -120,7 +120,7 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+          <div className="bg-background/70 absolute inset-0 backdrop-blur-sm" />
         </div>
 
         <div
@@ -172,7 +172,7 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+          <div className="bg-background/70 absolute inset-0 backdrop-blur-sm" />
         </div>
 
         <div
@@ -250,12 +250,8 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
     <div className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden px-4">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img
-          src="/onboarding-bg2.png"
-          alt=""
-          className="h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-background/70 backdrop-blur-sm" />
+        <Image src="/onboarding-bg2.png" alt="" fill className="object-cover" />
+        <div className="bg-background/70 absolute inset-0 backdrop-blur-sm" />
       </div>
 
       <div
