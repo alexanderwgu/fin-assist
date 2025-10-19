@@ -15,6 +15,7 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
   const [age, setAge] = useState('');
   const [step, setStep] = useState<OnboardingStep>('welcome');
   const [fadeState, setFadeState] = useState<'in' | 'out'>('out');
+  const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
 
   // Fade in on mount and step changes
   useEffect(() => {
@@ -27,7 +28,7 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
     setFadeState('out');
     setTimeout(() => {
       setStep('name');
-    }, 500);
+    }, 700);
   };
 
   const handleNameSubmit = (e: React.FormEvent) => {
@@ -36,7 +37,7 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
       setFadeState('out');
       setTimeout(() => {
         setStep('age');
-      }, 500);
+      }, 800);
     }
   };
 
@@ -46,7 +47,7 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
       setFadeState('out');
       setTimeout(() => {
         setStep('video');
-      }, 500);
+      }, 700);
     }
   };
 
@@ -60,6 +61,13 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
       }, 3000);
     }, 500);
   };
+
+  const features = [
+    '24/7 empathetic financial guidance',
+    'Crisis detection and support',
+    'Interactive budget visualization',
+    'Financial literacy education'
+  ];
 
   if (step === 'welcome') {
     return (
@@ -82,22 +90,42 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
           }`}
         >
           <div className="mb-8">
-            <h1 className="text-foreground mb-4 text-3xl font-bold">Welcome to FinAssist</h1>
+            <h1 className="text-foreground mb-4 text-3xl font-light tracking-wide">Welcome to FinAssist</h1>
             <p className="text-muted-foreground text-lg">
               Your compassionate financial wellness companion
             </p>
           </div>
 
-          <div className="mb-8 space-y-4">
-            <div className="bg-muted/50 rounded-lg p-4 text-left">
-              <h2 className="text-foreground mb-2 font-semibold">What we offer:</h2>
-              <ul className="text-muted-foreground space-y-2 text-sm">
-                <li>• 24/7 empathetic financial guidance</li>
-                <li>• Crisis detection and support</li>
-                <li>• Interactive budget visualization</li>
-                <li>• Financial literacy education</li>
-              </ul>
-            </div>
+          <div className="mb-8 space-y-3">
+            {features.map((feature, idx) => (
+              <div
+                key={idx}
+                onMouseEnter={() => setHoveredFeature(idx)}
+                onMouseLeave={() => setHoveredFeature(null)}
+                className={`relative rounded-lg p-4 cursor-crosshair transition-all duration-300 ${
+                  hoveredFeature === idx
+                    ? 'bg-white border-2 border-gray-300/60 shadow-lg transform scale-105'
+                    : 'bg-muted/50 border border-muted-foreground/20 hover:bg-gray-50/80 hover:border-muted-foreground/30'
+                }`}
+              >
+                <div className="flex items-start space-x-3">
+                  <div className={`w-3 h-3 rounded-full mt-0.5 transition-all duration-300 ${
+                    hoveredFeature === idx
+                      ? 'bg-blue-500 shadow-md'
+                      : 'bg-gray-400'
+                  }`} />
+                  <div className="flex-1">
+                    <p className={`text-sm font-medium transition-colors duration-300 leading-relaxed ${
+                      hoveredFeature === idx
+                        ? 'text-gray-900'
+                        : 'text-gray-300'
+                    }`}>
+                      {feature}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
 
           <Button onClick={handleStart} size="lg" className="w-full max-w-xs">
@@ -137,15 +165,15 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
             </p>
           </div>
 
-          <form onSubmit={handleNameSubmit} className="space-y-6">
-            <div>
+          <form onSubmit={handleNameSubmit} className="space-y-8">
+            <div className="space-y-2">
               <input
                 id="name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 autoFocus
-                className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:ring-ring w-full rounded-md border px-4 py-3 text-center text-lg transition-all outline-none focus:ring-2"
+                className="border-input bg-background text-foreground placeholder:text-muted-foreground focus:ring-ring w-full rounded-lg border px-5 py-4 text-center text-lg transition-all outline-none focus:ring-2"
                 placeholder="Enter your name"
                 required
               />
@@ -166,7 +194,7 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="/onboarding-bg2.png"
+            src="/onboarding-bg.png"
             alt="Onboarding background"
             fill
             className="object-cover"
@@ -187,14 +215,14 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
             <p className="text-muted-foreground text-lg">What&apos;s your age range?</p>
           </div>
 
-          <form onSubmit={handleAgeSubmit} className="space-y-6">
-            <div>
+          <form onSubmit={handleAgeSubmit} className="space-y-8">
+            <div className="space-y-2">
               <select
                 id="age"
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
                 autoFocus
-                className="border-input bg-background text-foreground focus:ring-ring w-full rounded-md border px-4 py-3 text-center text-lg transition-all outline-none focus:ring-2"
+                className="border-input bg-background text-foreground focus:ring-ring w-full rounded-lg border px-5 py-4 text-center text-lg transition-all outline-none focus:ring-2"
                 required
               >
                 <option value="">Select age range</option>
@@ -250,16 +278,22 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
     <div className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden px-4">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <Image src="/onboarding-bg2.png" alt="" fill className="object-cover" />
+        <Image
+          src="/onboarding-bg2.png"
+          alt="Onboarding background"
+          fill
+          className="object-cover"
+          priority
+        />
         <div className="bg-background/70 absolute inset-0 backdrop-blur-sm" />
       </div>
 
       <div
-        className={`relative z-10 mx-auto max-w-md text-center transition-opacity duration-500 ${
+        className={`relative z-10 mx-auto max-w-md text-center transition-opacity duration-700 ${
           fadeState === 'in' ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        <div className="mb-8">
+        <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
             <svg
               className="size-8 text-green-600 dark:text-green-400"
@@ -275,8 +309,8 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
               />
             </svg>
           </div>
-          <h1 className="text-foreground mb-2 text-2xl font-bold">You&apos;re all set!</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-foreground mb-2 text-3xl font-light tracking-wide">You&apos;re all set!</h1>
+          <p className="text-muted-foreground text-lg">
             Welcome, {name}! We&apos;re here to support your financial journey.
           </p>
         </div>
