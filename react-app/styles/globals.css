@@ -3,6 +3,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* * {
+  cursor: url('/alexwgucreation.png'), auto;
+} */
+
+/* Different cursor for interactive elements */
+button, a, [role="button"] {
+  cursor: url('/alexwgucreation.png'), pointer;
+}
+
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
