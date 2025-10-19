@@ -31,9 +31,9 @@ export const getAppConfig = cache(async (headers: Headers): Promise<AppConfig> =
   // The API endpoint can be used client-side if needed for dynamic configuration
   const config: AppConfig = {
     ...APP_CONFIG_DEFAULTS,
-    pageTitle: 'CalmCall - Financial Wellness Assistant',
+    pageTitle: 'FinAssist - Financial Wellness Assistant',
     pageDescription: 'Your compassionate financial wellness companion',
-    companyName: 'CalmCall',
+    companyName: 'FinAssist',
     startButtonText: 'Start Financial Consultation',
     sandboxId,
   };
