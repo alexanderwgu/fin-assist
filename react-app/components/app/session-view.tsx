@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
+import { useRemoteParticipants } from '@livekit/components-react';
 import type { AppConfig } from '@/app-config';
+import { BudgetSankey } from '@/components/app/BudgetSankey';
 import { ChatTranscript } from '@/components/app/chat-transcript';
 import { PreConnectMessage } from '@/components/app/preconnect-message';
 import { TileLayout } from '@/components/app/tile-layout';
@@ -10,14 +12,12 @@ import {
   AgentControlBar,
   type ControlBarControls,
 } from '@/components/livekit/agent-control-bar/agent-control-bar';
+import { useBudgetSankey } from '@/hooks/useBudgetSankey';
 import { useChatMessages } from '@/hooks/useChatMessages';
 import { useConnectionTimeout } from '@/hooks/useConnectionTimout';
 import { useDebugMode } from '@/hooks/useDebug';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '../livekit/scroll-area/scroll-area';
-import { useRemoteParticipants } from '@livekit/components-react';
-import { useBudgetSankey } from '@/hooks/useBudgetSankey';
-import { BudgetSankey } from '@/components/app/BudgetSankey';
 
 const MotionBottom = motion.create('div');
 
@@ -39,7 +39,6 @@ const BOTTOM_VIEW_MOTION_PROPS = {
   transition: {
     duration: 0.3,
     delay: 0.5,
-    ease: 'easeOut',
   },
 };
 
@@ -112,7 +111,7 @@ export const SessionView = ({
       {/* Budget Sankey (if provided by agent tool) */}
       {sankeyVisible && (
         <div className="pointer-events-auto fixed inset-0 z-50 grid place-items-center">
-          <div className="w-[min(90vw,900px)] max-h-[80vh] overflow-auto rounded-lg border bg-background/80 p-4 backdrop-blur-md shadow-lg">
+          <div className="bg-background/80 max-h-[80vh] w-[min(90vw,900px)] overflow-auto rounded-lg border p-4 shadow-lg backdrop-blur-md">
             <BudgetSankey nodes={nodes!} links={links!} />
           </div>
         </div>

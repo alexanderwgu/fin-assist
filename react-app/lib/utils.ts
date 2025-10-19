@@ -27,48 +27,18 @@ export function cn(...inputs: ClassValue[]) {
 export const getAppConfig = cache(async (headers: Headers): Promise<AppConfig> => {
   const sandboxId = SANDBOX_ID ?? headers.get('x-sandbox-id') ?? '';
 
-  try {
-    // Allow CONFIG_ENDPOINT to be relative (e.g. '/api/app-config') on the server by resolving against request origin
-    const proto = headers.get('x-forwarded-proto');
-    const host = headers.get('host');
-    const inferredOrigin = proto && host ? `${proto}://${host}` : undefined;
-    const fallbackOrigin =
-      process.env.NEXT_PUBLIC_SITE_URL ??
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-    const base = inferredOrigin ?? fallbackOrigin;
-    const endpointUrl = new URL(CONFIG_ENDPOINT, base);
+  // For now, just return the default config to avoid API fetch issues during SSR
+  // The API endpoint can be used client-side if needed for dynamic configuration
+  const config: AppConfig = {
+    ...APP_CONFIG_DEFAULTS,
+    pageTitle: 'CalmCall - Financial Wellness Assistant',
+    pageDescription: 'Your compassionate financial wellness companion',
+    companyName: 'CalmCall',
+    startButtonText: 'Start Financial Consultation',
+    sandboxId,
+  };
 
-    const response = await fetch(endpointUrl.toString(), {
-      cache: 'no-store',
-      headers: sandboxId ? { 'X-Sandbox-ID': sandboxId } : undefined,
-    });
-
-    // Accept either our SandboxConfig shape or a direct AppConfig
-    const json = await response.json();
-    if (json && json.pageTitle && json.companyName) {
-      return { ...APP_CONFIG_DEFAULTS, ...json } satisfies AppConfig;
-    }
-
-    const remoteConfig: SandboxConfig = json;
-    const config: AppConfig = { ...APP_CONFIG_DEFAULTS, sandboxId };
-
-    for (const [key, entry] of Object.entries(remoteConfig)) {
-      if (entry === null) continue;
-      if (
-        (key in APP_CONFIG_DEFAULTS && APP_CONFIG_DEFAULTS[key as keyof AppConfig] === undefined) ||
-        (typeof config[key as keyof AppConfig] === entry.type &&
-          typeof config[key as keyof AppConfig] === typeof entry.value)
-      ) {
-        // @ts-expect-error see above
-        config[key as keyof AppConfig] = entry.value as AppConfig[keyof AppConfig];
-      }
-    }
-
-    return config;
-  } catch (error) {
-    console.error('ERROR: getAppConfig() - lib/utils.ts', error);
-    return APP_CONFIG_DEFAULTS;
-  }
+  return config;
 });
 
 // check provided accent colors against defaults

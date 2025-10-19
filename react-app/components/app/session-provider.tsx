@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useMemo, useCallback, useState } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { RoomContext } from '@livekit/components-react';
 import { APP_CONFIG_DEFAULTS, type AppConfig } from '@/app-config';
 import { useRoom } from '@/hooks/useRoom';
@@ -39,7 +39,13 @@ export const SessionProvider = ({ appConfig, children }: SessionProviderProps) =
   );
 
   const contextValue = useMemo(
-    () => ({ appConfig, isSessionActive, sessionMode, startSession: startSessionWithMode, endSession }),
+    () => ({
+      appConfig,
+      isSessionActive,
+      sessionMode,
+      startSession: startSessionWithMode,
+      endSession,
+    }),
     [appConfig, isSessionActive, sessionMode, startSessionWithMode, endSession]
   );
 

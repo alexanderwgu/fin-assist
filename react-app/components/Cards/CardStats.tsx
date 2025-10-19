@@ -1,9 +1,9 @@
-import React from "react";
+import React from 'react';
 
 interface CardStatsProps {
   statSubtitle?: string;
   statTitle?: string;
-  statArrow?: "up" | "down";
+  statArrow?: 'up' | 'down';
   statPercent?: string;
   statPercentColor?: string;
   statDescription?: string;
@@ -12,32 +12,30 @@ interface CardStatsProps {
 }
 
 export default function CardStats({
-  statSubtitle = "Traffic",
-  statTitle = "350,897",
-  statArrow = "up",
-  statPercent = "3.48",
-  statPercentColor = "text-emerald-600",
-  statDescription = "Since last month",
-  statIconName = "far fa-chart-bar",
-  statIconColor = "bg-emerald-500",
+  statSubtitle = 'Traffic',
+  statTitle = '350,897',
+  statArrow = 'up',
+  statPercent = '3.48',
+  statPercentColor = 'text-emerald-600',
+  statDescription = 'Since last month',
+  statIconName = 'far fa-chart-bar',
+  statIconColor = 'bg-emerald-500',
 }: CardStatsProps) {
   return (
     <>
-      <div className="relative flex flex-col min-w-0 break-words bg-white rounded-lg mb-6 xl:mb-0 shadow-lg border border-gray-100">
+      <div className="relative mb-6 flex min-w-0 flex-col rounded-lg border border-gray-100 bg-white break-words shadow-lg xl:mb-0">
         <div className="flex-auto p-6">
           <div className="flex flex-wrap">
-            <div className="relative w-full pr-4 max-w-full flex-grow flex-1">
-              <h5 className="text-gray-500 uppercase font-medium text-xs tracking-wide">
+            <div className="relative w-full max-w-full flex-1 flex-grow pr-4">
+              <h5 className="text-xs font-medium tracking-wide text-gray-500 uppercase">
                 {statSubtitle}
               </h5>
-              <span className="font-bold text-2xl text-gray-800 mt-1 block">
-                {statTitle}
-              </span>
+              <span className="mt-1 block text-2xl font-bold text-gray-800">{statTitle}</span>
             </div>
-            <div className="relative w-auto pl-4 flex-initial">
+            <div className="relative w-auto flex-initial pl-4">
               <div
                 className={
-                  "text-white p-3 text-center inline-flex items-center justify-center w-12 h-12 shadow-lg rounded-full " +
+                  'inline-flex h-12 w-12 items-center justify-center rounded-full p-3 text-center text-white shadow-lg ' +
                   statIconColor
                 }
               >
@@ -45,20 +43,20 @@ export default function CardStats({
               </div>
             </div>
           </div>
-          <p className="text-sm text-gray-500 mt-4">
-            <span className={statPercentColor + " mr-2 font-medium"}>
+          <p className="mt-4 text-sm text-gray-500">
+            <span className={statPercentColor + ' mr-2 font-medium'}>
               <i
                 className={
-                  statArrow === "up"
-                    ? "fas fa-arrow-up"
-                    : statArrow === "down"
-                    ? "fas fa-arrow-down"
-                    : ""
+                  statArrow === 'up'
+                    ? 'fas fa-arrow-up'
+                    : statArrow === 'down'
+                      ? 'fas fa-arrow-down'
+                      : ''
                 }
-              ></i>{" "}
+              ></i>{' '}
               {statPercent}%
             </span>
-            <span className="whitespace-nowrap font-medium">{statDescription}</span>
+            <span className="font-medium whitespace-nowrap">{statDescription}</span>
           </p>
         </div>
       </div>

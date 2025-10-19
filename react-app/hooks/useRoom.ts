@@ -70,38 +70,57 @@ export function useRoom(appConfig: AppConfig) {
     [appConfig]
   );
 
-  const startSession = useCallback((mode?: 'budgeting' | 'hotline') => {
-    setIsSessionActive(true);
-    selectedModeRef.current = mode;
+  const startSession = useCallback(
+    (mode?: 'budgeting' | 'hotline') => {
+      setIsSessionActive(true);
+      selectedModeRef.current = mode;
 
-    if (room.state === 'disconnected') {
-      const { isPreConnectBufferEnabled } = appConfig;
-      Promise.all([
-        room.localParticipant.setMicrophoneEnabled(true, undefined, {
-          preConnectBuffer: isPreConnectBufferEnabled,
-        }),
-        tokenSource
-          .fetch({ agentName: appConfig.agentName })
-          .then((connectionDetails) =>
-            room.connect(connectionDetails.serverUrl, connectionDetails.participantToken)
-          ),
-      ]).catch((error) => {
-        if (aborted.current) {
-          // Once the effect has cleaned up after itself, drop any errors
-          //
-          // These errors are likely caused by this effect rerunning rapidly,
-          // resulting in a previous run `disconnect` running in parallel with
-          // a current run `connect`
+      if (room.state === 'disconnected') {
+        const { isPreConnectBufferEnabled } = appConfig;
+
+        // Check if LiveKit credentials are available
+        const hasLiveKitConfig = process.env.NEXT_PUBLIC_LIVEKIT_URL ||
+                                process.env.LIVEKIT_URL ||
+                                process.env.LIVEKIT_API_KEY;
+
+        if (!hasLiveKitConfig) {
+          // Show demo mode when LiveKit is not configured
+          toastAlert({
+            title: 'Demo Mode',
+            description: 'LiveKit is not configured. Running in demo mode.',
+          });
           return;
         }
 
-        toastAlert({
-          title: 'There was an error connecting to the agent',
-          description: `${error.name}: ${error.message}`,
+        Promise.all([
+          room.localParticipant.setMicrophoneEnabled(true, undefined, {
+            preConnectBuffer: isPreConnectBufferEnabled,
+          }),
+          tokenSource
+            .fetch({ agentName: appConfig.agentName })
+            .then((connectionDetails) =>
+              room.connect(connectionDetails.serverUrl, connectionDetails.participantToken)
+            ),
+        ]).catch((error) => {
+          if (aborted.current) {
+            // Once the effect has cleaned up after itself, drop any errors
+            //
+            // These errors are likely caused by this effect rerunning rapidly,
+            // resulting in a previous run `disconnect` running in parallel with
+            // a current run `connect`
+            return;
+          }
+
+          toastAlert({
+            title: 'Connection Error',
+            description: 'Unable to connect to the voice agent. Please check your configuration.',
+          });
+          setIsSessionActive(false); // Reset session state on error
         });
-      });
-    }
-  }, [room, appConfig, tokenSource]);
+      }
+    },
+    [room, appConfig, tokenSource]
+  );
 
   const endSession = useCallback(() => {
     setIsSessionActive(false);

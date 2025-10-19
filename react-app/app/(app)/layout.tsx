@@ -7,7 +7,7 @@ interface LayoutProps {
 
 export default async function Layout({ children }: LayoutProps) {
   const hdrs = await headers();
-  const { companyName, logo, logoDark } = await getAppConfig(hdrs);
+  await getAppConfig(hdrs);
 
   return (
     <>
@@ -17,8 +17,7 @@ export default async function Layout({ children }: LayoutProps) {
           rel="noopener noreferrer"
           href="https://capycot.com"
           className="scale-100 transition-transform duration-300 hover:scale-110"
-        >
-        </a>
+        ></a>
         <span className="text-foreground font-mono text-xs font-bold tracking-wider uppercase">
           FinAssist
         </span>

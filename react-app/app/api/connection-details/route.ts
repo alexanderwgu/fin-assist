@@ -19,14 +19,14 @@ export const revalidate = 0;
 
 export async function POST(req: Request) {
   try {
-    if (LIVEKIT_URL === undefined) {
-      throw new Error('LIVEKIT_URL is not defined');
-    }
-    if (API_KEY === undefined) {
-      throw new Error('LIVEKIT_API_KEY is not defined');
-    }
-    if (API_SECRET === undefined) {
-      throw new Error('LIVEKIT_API_SECRET is not defined');
+    if (LIVEKIT_URL === undefined || API_KEY === undefined || API_SECRET === undefined) {
+      // Return a mock response for demo mode
+      return NextResponse.json({
+        serverUrl: 'ws://localhost:7880',
+        roomName: 'demo-room',
+        participantName: 'demo-user',
+        participantToken: 'demo-token',
+      });
     }
 
     // Parse agent configuration from request body

@@ -14,7 +14,6 @@ import { cn } from '@/lib/utils';
 const MotionContainer = motion.create('div');
 
 const ANIMATION_TRANSITION = {
-  type: 'spring',
   stiffness: 675,
   damping: 75,
   mass: 1,
@@ -191,7 +190,10 @@ export function TileLayout({ chatOpen, sankeyVisible = false }: TileLayoutProps)
                     width={videoWidth}
                     height={videoHeight}
                     trackRef={agentVideoTrack}
-                    className={cn(chatOpen && (sankeyVisible ? 'size-[60px] object-cover' : 'size-[90px] object-cover'))}
+                    className={cn(
+                      chatOpen &&
+                        (sankeyVisible ? 'size-[60px] object-cover' : 'size-[90px] object-cover')
+                    )}
                   />
                 </MotionContainer>
               )}
