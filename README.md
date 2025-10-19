@@ -795,9 +795,9 @@ try {
 
 ## 🤝 Contributing
 
-We welcome contributions! Whether it's bug fixes, feature requests, or documentation improvements.
+We don't welcome contributions because we don't want to look at this project anymore lol! 
 
-### Getting Started
+### Getting Started (if u still want to, though)
 
 1. **Fork** the repository
 2. **Create** a feature branch: `git checkout -b feature/amazing-feature`
@@ -853,17 +853,10 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 - [React Documentation](https://react.dev)
 - [Tailwind CSS Guide](https://tailwindcss.com/docs)
 
-### Community
-
-- 💬 **Discord**: [Join our community](https://discord.gg/FinAssist)
-- 🐛 **Issues**: [Report bugs](https://github.com/your-org/fin-assist/issues)
-- 💡 **Discussions**: [Share ideas](https://github.com/your-org/fin-assist/discussions)
-
 ### Contact
 
-- 📧 **Email**: support@FinAssist.app
+- 📧 **Email**: founders@capycot.com
 - 🌐 **Website**: [FinAssist.app](https://FinAssist.app)
-- 🐦 **Twitter**: [@FinAssistApp](https://twitter.com/FinAssistapp)
 
 ---
 
@@ -888,6 +881,8 @@ Built with ❤️ during a 24-hour hackathon by developers passionate about fina
 - Vercel AI SDK for LLM integration
 - ElevenLabs for emotional voice synthesis
 - Open-source community for amazing tools
+- My amazing besty alexander w gu
+- capycot.com
 
 ---
 
