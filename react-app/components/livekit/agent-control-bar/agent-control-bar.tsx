@@ -14,7 +14,9 @@ import { UseInputControlsProps, useInputControls } from './hooks/use-input-contr
 import { usePublishPermissions } from './hooks/use-publish-permissions';
 import { TrackSelector } from './track-selector';
 import { useChatMessages } from '@/hooks/useChatMessages';
+import { useBudgetSankey } from '@/hooks/useBudgetSankey';
 import { saveTranscript } from '@/lib/transcript';
+import { saveSankey } from '@/lib/sankey';
 import { useRouter } from 'next/navigation';
 
 export interface ControlBarControls {
@@ -48,9 +50,10 @@ export function AgentControlBar({
   const participants = useRemoteParticipants();
   const [chatOpen, setChatOpen] = useState(false);
   const publishPermissions = usePublishPermissions();
-  const { isSessionActive, endSession } = useSession();
+  const { isSessionActive, endSession, sessionMode } = useSession();
   const messages = useChatMessages();
   const router = useRouter();
+  const { nodes, links } = useBudgetSankey();
 
   const {
     micTrackRef,
@@ -86,11 +89,14 @@ export function AgentControlBar({
   const handleDisconnect = useCallback(async () => {
     try {
       saveTranscript(transcriptItems);
+      if (sessionMode === 'budgeting' && nodes && links && links.length > 0) {
+        saveSankey(nodes, links);
+      }
     } catch {}
     endSession();
     onDisconnect?.();
     router.push('/transcript');
-  }, [endSession, onDisconnect, router, transcriptItems]);
+  }, [endSession, onDisconnect, router, transcriptItems, sessionMode, nodes, links]);
 
   const visibleControls = {
     leave: controls?.leave ?? true,
