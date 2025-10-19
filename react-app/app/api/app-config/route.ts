@@ -1,21 +1,17 @@
-﻿import { NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+import { APP_CONFIG_DEFAULTS } from '@/app-config';
 
-export async function GET() {
-  // Return the default app configuration for CalmCall
+export const revalidate = 0;
+
+export async function GET(req: Request) {
+  const headers = new Headers({ 'Cache-Control': 'no-store' });
+  const sandboxId = (req.headers.get('x-sandbox-id') ?? '').trim();
+
   const config = {
-    pageTitle: 'CalmCall - Financial Wellness Assistant',
-    pageDescription: 'Your compassionate financial wellness companion',
-    companyName: 'CalmCall',
-    supportsChatInput: true,
-    supportsVideoInput: true,
-    supportsScreenShare: false,
-    isPreConnectBufferEnabled: true,
-    logo: '/lk-logo.svg',
-    startButtonText: 'Start Financial Consultation',
-    accent: '#10b981',
-    logoDark: '/lk-logo-dark.svg',
-    accentDark: '#34d399',
+    ...APP_CONFIG_DEFAULTS,
+    sandboxId: sandboxId || APP_CONFIG_DEFAULTS.sandboxId,
   };
 
-  return NextResponse.json(config);
+  return NextResponse.json(config, { headers });
 }
+

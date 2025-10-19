@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import { useRemoteParticipants } from '@livekit/components-react';
 import type { AppConfig } from '@/app-config';
@@ -75,6 +75,40 @@ export const SessionView = ({
   const [chatOpen, setChatOpen] = useState(false);
   useRemoteParticipants();
   const { nodes, links } = useBudgetSankey();
+  const [devSankeyVisible] = useState(false);
+
+  // Simplified sample dataset for dev preview
+  const devNodes = useMemo(
+    () => [
+      { id: 'Income' },
+      { id: 'Salary' },
+      { id: 'Side Hustle' },
+      { id: 'Taxes' },
+      { id: 'Investments' },
+      { id: 'Savings' },
+      { id: 'Needs' },
+      { id: 'Wants' },
+      { id: 'Housing' },
+      { id: 'Essentials' },
+      { id: 'Discretionary' },
+    ],
+    []
+  );
+  const devLinks = useMemo(
+    () => [
+      { source: 'Salary', target: 'Income', value: 5200 },
+      { source: 'Side Hustle', target: 'Income', value: 800 },
+      { source: 'Income', target: 'Taxes', value: 1400 },
+      { source: 'Income', target: 'Investments', value: 600 },
+      { source: 'Income', target: 'Savings', value: 800 },
+      { source: 'Income', target: 'Needs', value: 2500 },
+      { source: 'Income', target: 'Wants', value: 700 },
+      { source: 'Needs', target: 'Housing', value: 1500 },
+      { source: 'Needs', target: 'Essentials', value: 1000 },
+      { source: 'Wants', target: 'Discretionary', value: 700 },
+    ],
+    []
+  );
 
   const controls: ControlBarControls = {
     leave: true,
@@ -85,6 +119,7 @@ export const SessionView = ({
   };
 
   const sankeyVisible = Boolean(nodes && links && links.length > 0);
+  const effectiveSankeyVisible = sankeyVisible || devSankeyVisible;
 
   return (
     <section className="bg-background relative z-10 h-full w-full overflow-hidden" {...props}>
@@ -106,13 +141,13 @@ export const SessionView = ({
       </div>
 
       {/* Tile Layout */}
-      <TileLayout chatOpen={chatOpen} sankeyVisible={sankeyVisible} />
+      <TileLayout chatOpen={chatOpen} sankeyVisible={effectiveSankeyVisible} />
 
       {/* Budget Sankey (if provided by agent tool) */}
-      {sankeyVisible && (
+      {effectiveSankeyVisible && (
         <div className="pointer-events-auto fixed inset-0 z-50 grid place-items-center">
-          <div className="bg-background/80 max-h-[80vh] w-[min(90vw,900px)] overflow-auto rounded-lg border p-4 shadow-lg backdrop-blur-md">
-            <BudgetSankey nodes={nodes!} links={links!} />
+          <div className="w-[min(90vw,900px)] max-h-[80vh] overflow-auto rounded-lg border bg-background/80 p-4 backdrop-blur-md shadow-lg">
+            <BudgetSankey nodes={(nodes && links ? nodes : devNodes)!} links={(nodes && links ? links : devLinks)!} />
           </div>
         </div>
       )}

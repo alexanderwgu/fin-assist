@@ -1,34 +1,49 @@
 import { llm } from '@livekit/agents';
 import { z } from 'zod';
 
-export function getToolsForMode(mode?: string, room?: any) {
-  const tools: Record<string, any> = {};
+export type SessionMode = 'budgeting' | 'hotline';
+
+export type ToolsMap = Record<string, unknown>;
+
+type RoomLike = {
+  localParticipant?: {
+    publishData?: (data: Uint8Array, options: { reliable?: boolean; topic?: string }) => Promise<void> | void;
+  };
+};
+
+export function getToolsForMode(mode: SessionMode | undefined, room: RoomLike): ToolsMap {
+  const tools: ToolsMap = {};
 
   if (mode === 'budgeting') {
     tools.showBudgetSankey = llm.tool({
-      description: "Display a Sankey diagram of the user's monthly budget. Provide 'nodes' and 'links' describing flows from income to allocations.",
+      description:
+        "Display a Sankey diagram of the user's monthly budget. Provide 'nodes' and 'links' describing flows from income to allocations.",
       parameters: z.object({
         nodes: z
-          .array(z.object({
-            id: z.string().describe('Unique identifier for a node (e.g., "Income", "Rent")'),
-          }))
+          .array(
+            z.object({
+              id: z.string().describe('Unique identifier for a node (e.g., "Income", "Rent")'),
+            })
+          )
           .min(2)
           .describe('Nodes in the Sankey diagram'),
         links: z
-          .array(z.object({
-            source: z.string().describe('Source node id (e.g., "Income")'),
-            target: z.string().describe('Target node id (e.g., "Rent")'),
-            value: z
-              .number()
-              .min(0.000001)
-              .describe('Monthly amount flowing from source to target'),
-          }))
+          .array(
+            z.object({
+              source: z.string().describe('Source node id (e.g., "Income")'),
+              target: z.string().describe('Target node id (e.g., "Rent")'),
+              value: z
+                .number()
+                .min(0.000001)
+                .describe('Monthly amount flowing from source to target'),
+            })
+          )
           .min(1)
           .describe('Directed flows between nodes'),
       }),
       execute: async ({ nodes, links }) => {
         // Sanitize: ensure all link endpoints exist as nodes; dedupe nodes by id
-        const nodeMap = new Map();
+        const nodeMap = new Map<string, { id: string }>();
         for (const n of nodes) {
           if (typeof n?.id === 'string' && n.id.trim()) {
             nodeMap.set(n.id, { id: n.id });
@@ -37,10 +52,8 @@ export function getToolsForMode(mode?: string, room?: any) {
         for (const l of links) {
           const s = String(l.source);
           const t = String(l.target);
-          if (s && !nodeMap.has(s))
-            nodeMap.set(s, { id: s });
-          if (t && !nodeMap.has(t))
-            nodeMap.set(t, { id: t });
+          if (s && !nodeMap.has(s)) nodeMap.set(s, { id: s });
+          if (t && !nodeMap.has(t)) nodeMap.set(t, { id: t });
         }
         const sanitizedNodes = Array.from(nodeMap.values());
         const payload = { type: 'budget_sankey', nodes: sanitizedNodes, links };
@@ -58,7 +71,8 @@ export function getToolsForMode(mode?: string, room?: any) {
 
   // Web search tool (available in both modes). Uses Tavily with basic depth only to limit credits.
   tools.webSearch = llm.tool({
-    description: 'Search the web and return top results (titles and URLs). Uses basic depth to conserve credits.',
+    description:
+      'Search the web and return top results (titles and URLs). Uses basic depth to conserve credits.',
     parameters: z.object({
       query: z.string().min(3).describe('What to search for'),
       maxResults: z
@@ -73,6 +87,7 @@ export function getToolsForMode(mode?: string, room?: any) {
       if (!apiKey) {
         return 'Web search is not configured (missing TAVILY_API_KEY).';
       }
+
       const capped = Math.min(5, Math.max(1, Math.trunc(maxResults)));
       try {
         const response = await fetch('https://api.tavily.com/search', {
@@ -85,16 +100,16 @@ export function getToolsForMode(mode?: string, room?: any) {
             max_results: capped,
           }),
         });
+
         if (!response.ok) {
           return `Search failed: ${response.status} ${response.statusText}`;
         }
-        const data = (await response.json());
+        const data = (await response.json()) as any;
         const items = Array.isArray(data?.results) ? data.results.slice(0, capped) : [];
-        if (!items.length)
-          return `No results for "${query}".`;
+        if (!items.length) return `No results for "${query}".`;
         const lines = items.map((r: any) => `- ${r.title ?? r.url ?? 'Result'} — ${r.url ?? ''}`);
         return `Top results for "${query}":\n${lines.join('\n')}`;
-      } catch (error) {
+      } catch (error: any) {
         console.error('webSearch error', error);
         return 'Search is temporarily unavailable.';
       }
@@ -103,3 +118,4 @@ export function getToolsForMode(mode?: string, room?: any) {
 
   return tools;
 }
+

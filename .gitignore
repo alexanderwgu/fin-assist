@@ -1,55 +1,56 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Root ignore rules for the monorepo (agent-starter-node + react-app)
 
-# dependencies
-/node_modules
-/react-app/node_modules
-/agent-starter-node/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# Dependencies
+node_modules/
+agent-starter-node/node_modules/
+react-app/node_modules/
 
-# testing
-/coverage
+# Build outputs
+dist/
+agent-starter-node/dist/
+react-app/dist/
+build/
+.next/
+out/
 
-# next.js
-/.next/
-/out/
-/react-app/.next/
-/react-app/out/
-/agent-starter-node/.next/
-/agent-starter-node/out/
+# Caches and tooling
+.cache/
+.parcel-cache/
+.turbo/
+.nyc_output/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
 
-# production
-/build
+# Env files (keep examples)
+.env*
+!.env.example
+**/.env*
+!**/.env.example
 
-# misc
-.DS_Store
-*.pem
-
-# debug
+# Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
-!.env.example
+# IDE/editor
+.vscode/
+.idea/
 
-# vercel
+# OS
+.DS_Store
+*.pem
+
+# Vercel
 .vercel
 
-# typescript
-*.tsbuildinfo
+# TypeScript
 next-env.d.ts
-# Build artifacts for each project
-/build/
-/react-app/build/
-/agent-starter-node/build/
-/coverage/
+
+# Testing
+coverage/
 /react-app/coverage/
 /agent-starter-node/coverage/

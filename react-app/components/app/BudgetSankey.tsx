@@ -1,185 +1,178 @@
-'use client';
+ 'use client';
 
-import React, { useEffect, useRef } from 'react';
-import { sankeyLinkHorizontal } from 'd3-sankey';
-import { select } from 'd3-selection';
-import type { BudgetLink, BudgetNode } from '@/hooks/useBudgetSankey';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { sankey as d3Sankey, sankeyLinkHorizontal } from 'd3-sankey';
+import type { SankeyLink, SankeyNode } from '@/hooks/useBudgetSankey';
 
 interface BudgetSankeyProps {
-  nodes: BudgetNode[];
-  links: BudgetLink[];
-}
-
-interface D3Link {
-  source: number | BudgetNode;
-  target: number | BudgetNode;
-  value: number;
-  index?: number;
-  width?: number;
-}
-
-interface D3Node {
-  name: string;
-  category: 'income' | 'expense' | 'savings';
-  index?: number;
-  x0?: number;
-  y0?: number;
-  x1?: number;
-  y1?: number;
+  nodes: SankeyNode[];
+  links: SankeyLink[];
 }
 
 export function BudgetSankey({ nodes, links }: BudgetSankeyProps) {
-  const svgRef = useRef<SVGSVGElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState<number>(600);
+  const formatCurrency = useMemo(() => {
+    try {
+      const f = new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0,
+      });
+      return (n: number) => f.format(n);
+    } catch {
+      return (n: number) => `$${Math.round(n).toLocaleString()}`;
+    }
+  }, []);
+
+  // Soft, soothing palette (tailwind-inspired 300s)
+  const palette = useMemo(
+    () => [
+      '#93c5fd', // blue-300
+      '#86efac', // green-300
+      '#a5b4fc', // indigo-300
+      '#fbcfe8', // pink-300
+      '#fcd34d', // amber-300
+      '#67e8f9', // cyan-300
+      '#c4b5fd', // violet-300
+      '#fde68a', // yellow-300
+      '#99f6e4', // teal-300
+      '#fda4af', // rose-300
+    ],
+    []
+  );
+
+  const nodeColor = useMemo(() => {
+    const map = new Map<string, string>();
+    nodes.forEach((n, i) => map.set(n.id, palette[i % palette.length]));
+    return map;
+  }, [nodes, palette]);
 
   useEffect(() => {
-    if (!svgRef.current || !nodes.length || !links.length) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const nextWidth = Math.min(700, Math.max(320, Math.floor(entry.contentRect.width)));
+        setWidth(nextWidth);
+      }
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
-    const svg = select(svgRef.current);
-    const width = 800;
-    const height = 400;
+  const height = useMemo(() => {
+    const minHeight = 240;
+    const estimated = Math.max(nodes.length, links.length) * 28 + 80;
+    return Math.max(minHeight, Math.min(800, estimated));
+  }, [nodes.length, links.length]);
 
-    // Clear previous content
-    svg.selectAll('*').remove();
+  const graph = useMemo(() => {
+    const generator = d3Sankey<any, any>()
+      .nodeId((d: any) => d.id)
+      .nodeWidth(12)
+      .nodePadding(12)
+      .extent([[8, 8], [width - 8, height - 8]]);
 
-    // Set up SVG dimensions
-    svg
-      .attr('width', width)
-      .attr('height', height)
-      .attr('viewBox', [0, 0, width, height])
-      .attr('class', 'overflow-visible');
+    try {
+      return generator({
+        nodes: nodes.map((n) => ({ ...n })),
+        links: links.map((l) => ({ ...l })),
+      } as any);
+    } catch {
+      return null;
+    }
+  }, [nodes, links, width, height]);
 
-    // Create gradients for different categories
-    const defs = svg.append('defs');
-
-    const incomeGradient = defs
-      .append('linearGradient')
-      .attr('id', 'income-gradient')
-      .attr('x1', '0%')
-      .attr('y1', '0%')
-      .attr('x2', '100%')
-      .attr('y2', '0%');
-
-    incomeGradient.append('stop').attr('offset', '0%').attr('stop-color', '#10b981'); // green-500
-
-    incomeGradient.append('stop').attr('offset', '100%').attr('stop-color', '#059669'); // green-600
-
-    const expenseGradient = defs
-      .append('linearGradient')
-      .attr('id', 'expense-gradient')
-      .attr('x1', '0%')
-      .attr('y1', '0%')
-      .attr('x2', '100%')
-      .attr('y2', '0%');
-
-    expenseGradient.append('stop').attr('offset', '0%').attr('stop-color', '#f59e0b'); // amber-500
-
-    expenseGradient.append('stop').attr('offset', '100%').attr('stop-color', '#d97706'); // amber-600
-
-    const savingsGradient = defs
-      .append('linearGradient')
-      .attr('id', 'savings-gradient')
-      .attr('x1', '0%')
-      .attr('y1', '0%')
-      .attr('x2', '100%')
-      .attr('y2', '0%');
-
-    savingsGradient.append('stop').attr('offset', '0%').attr('stop-color', '#3b82f6'); // blue-500
-
-    savingsGradient.append('stop').attr('offset', '100%').attr('stop-color', '#2563eb'); // blue-600
-
-    // Draw links (flows)
-    svg
-      .append('g')
-      .attr('class', 'links')
-      .selectAll('path')
-      .data(links)
-      .join('path')
-      .attr('d', (d) => sankeyLinkHorizontal()(d as D3Link))
-      .attr('stroke', (d) => {
-        const targetNode =
-          typeof d.target === 'object' ? d.target : nodes.find((n) => n.index === d.target);
-        const targetCategory = targetNode?.category || 'expense';
-        switch (targetCategory) {
-          case 'income':
-            return 'url(#income-gradient)';
-          case 'expense':
-            return 'url(#expense-gradient)';
-          case 'savings':
-            return 'url(#savings-gradient)';
-          default:
-            return '#6b7280'; // gray-500
-        }
-      })
-      .attr('stroke-width', (d) => Math.max(1, (d as D3Link).width || 0))
-      .attr('stroke-opacity', 0.6)
-      .attr('fill', 'none');
-
-    // Draw nodes (rectangles)
-    svg
-      .append('g')
-      .attr('class', 'nodes')
-      .selectAll('rect')
-      .data(nodes)
-      .join('rect')
-      .attr('x', (d) => (d as D3Node).x0 || 0)
-      .attr('y', (d) => (d as D3Node).y0 || 0)
-      .attr('height', (d) => ((d as D3Node).y1 || 0) - ((d as D3Node).y0 || 0))
-      .attr('width', (d) => ((d as D3Node).x1 || 0) - ((d as D3Node).x0 || 0))
-      .attr('fill', (d) => {
-        if (!d.category) return '#6b7280';
-        switch (d.category) {
-          case 'income':
-            return 'url(#income-gradient)';
-          case 'expense':
-            return 'url(#expense-gradient)';
-          case 'savings':
-            return 'url(#savings-gradient)';
-          default:
-            return '#6b7280'; // gray-500
-        }
-      })
-      .attr('stroke', '#fff')
-      .attr('stroke-width', 1)
-      .attr('rx', 4);
-
-    // Add labels
-    svg
-      .append('g')
-      .attr('class', 'labels')
-      .selectAll('text')
-      .data(nodes)
-      .join('text')
-      .attr('x', (d) =>
-        ((d as D3Node).x0 || 0) < width / 2
-          ? ((d as D3Node).x1 || 0) + 6
-          : ((d as D3Node).x0 || 0) - 6
-      )
-      .attr('y', (d) => (((d as D3Node).y1 || 0) + ((d as D3Node).y0 || 0)) / 2)
-      .attr('dy', '0.35em')
-      .attr('text-anchor', (d) => (((d as D3Node).x0 || 0) < width / 2 ? 'start' : 'end'))
-      .attr('font-family', 'system-ui, -apple-system, sans-serif')
-      .attr('font-size', '12px')
-      .attr('fill', '#374151') // gray-700
-      .text((d) => d.name);
-  }, [nodes, links]);
-
-  if (!nodes.length || !links.length) {
+  if (!graph) {
     return (
-      <div className="text-muted-foreground flex h-64 w-full items-center justify-center">
-        No budget data available
+      <div className="rounded-md border p-3 text-sm text-muted-foreground">
+        Unable to render chart.
       </div>
     );
   }
 
   return (
-    <div className="w-full">
-      <div className="mb-4 text-center">
-        <h3 className="text-foreground text-lg font-semibold">Budget Flow</h3>
-        <p className="text-muted-foreground text-sm">Income to expense visualization</p>
-      </div>
-      <div className="flex justify-center">
-        <svg ref={svgRef} className="w-full max-w-4xl" style={{ minHeight: '400px' }} />
-      </div>
+    <div ref={containerRef} className="rounded-md border px-3 pb-3 pt-0 text-foreground">
+      <h3 className="mb-1 font-semibold">Budget Flow</h3>
+      <svg width={width} height={height} className="w-full">
+        <g>
+          {graph.links.map((l: any, i: number) => {
+            const path = sankeyLinkHorizontal<any, any>()(l);
+            const strokeWidth = Math.max(1, l.width ?? 1);
+            const sourceId = typeof l.source === 'object' && l.source ? (l.source.id ?? '') : (l.source as string);
+            const color = nodeColor.get(sourceId) ?? '#93c5fd';
+            return (
+              <path
+                key={`link-${i}`}
+                d={path ?? ''}
+                fill="none"
+                stroke={color}
+                strokeOpacity={0.7}
+                strokeWidth={strokeWidth}
+              />
+            );
+          })}
+        </g>
+        <g>
+          {graph.links.map((l: any, i: number) => {
+            const sx = (l.source?.x1 ?? 0) as number;
+            const tx = (l.target?.x0 ?? 0) as number;
+            const x = (sx + tx) / 2;
+            const y0 = (l.y0 ?? 0) as number;
+            const y1 = (l.y1 ?? 0) as number;
+            const y = (y0 + y1) / 2;
+            return (
+              <text
+                key={`label-${i}`}
+                x={x}
+                y={y}
+                dy="0.35em"
+                fontSize={12}
+                textAnchor="middle"
+                fill="#000000"
+                pointerEvents="none"
+              >
+                {formatCurrency(l.value as number)}
+              </text>
+            );
+          })}
+        </g>
+        <g>
+          {graph.nodes.map((n: any, i: number) => {
+            const x = n.x0 ?? 0;
+            const y = n.y0 ?? 0;
+            const w = Math.max(1, (n.x1 ?? 0) - x);
+            const h = Math.max(1, (n.y1 ?? 0) - y);
+            return (
+              <g key={`node-${i}`}>
+                <rect
+                  x={x}
+                  y={y}
+                  width={w}
+                  height={h}
+                  rx={3}
+                  fill={nodeColor.get(n.id) ?? '#93c5fd'}
+                  fillOpacity={0.2}
+                  stroke={nodeColor.get(n.id) ?? '#93c5fd'}
+                  strokeOpacity={0.8}
+                />
+                <text
+                  x={x < width / 2 ? (n.x1 ?? 0) + 6 : x - 6}
+                  y={y + h / 2}
+                  dy="0.35em"
+                  fontSize={12}
+                  textAnchor={x < width / 2 ? 'start' : 'end'}
+                  fill="currentColor"
+                >
+                  {n.id}
+                </text>
+              </g>
+            );
+          })}
+        </g>
+      </svg>
     </div>
   );
 }
+
