@@ -18,6 +18,11 @@ import { ChatInput } from './chat-input';
 import { UseInputControlsProps, useInputControls } from './hooks/use-input-controls';
 import { usePublishPermissions } from './hooks/use-publish-permissions';
 import { TrackSelector } from './track-selector';
+import { useChatMessages } from '@/hooks/useChatMessages';
+import { useBudgetSankey } from '@/hooks/useBudgetSankey';
+import { saveSankey } from '@/lib/sankey';
+import { useRouter } from 'next/navigation';
+import { useEmotionTracking } from '@/components/app/emotion-tracking-provider';
 
 export interface ControlBarControls {
   leave?: boolean;
@@ -54,6 +59,7 @@ export function AgentControlBar({
   const messages = useChatMessages();
   const router = useRouter();
   const { nodes, links } = useBudgetSankey();
+  const { isTrackingEnabled, enableTracking } = useEmotionTracking();
 
   const {
     micTrackRef,
@@ -180,6 +186,17 @@ export function AgentControlBar({
             onPressedChange={handleToggleTranscript}
           >
             <ChatTextIcon weight="bold" />
+          </Toggle>
+
+          {/* Toggle Emotion Tracking */}
+          <Toggle
+            size="default"
+            variant={isTrackingEnabled ? 'default' : 'secondary'}
+            aria-label="Toggle emotion tracking"
+            pressed={isTrackingEnabled}
+            onPressedChange={enableTracking}
+          >
+            {isTrackingEnabled ? 'Tracking On' : 'Tracking Off'}
           </Toggle>
         </div>
 
