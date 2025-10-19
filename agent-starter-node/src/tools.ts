@@ -42,7 +42,21 @@ export function getToolsForMode(mode: SessionMode | undefined, room: RoomLike): 
           .describe('Directed flows between nodes'),
       }),
       execute: async ({ nodes, links }) => {
-        const payload = { type: 'budget_sankey', nodes, links };
+        // Sanitize: ensure all link endpoints exist as nodes; dedupe nodes by id
+        const nodeMap = new Map<string, { id: string }>();
+        for (const n of nodes) {
+          if (typeof n?.id === 'string' && n.id.trim()) {
+            nodeMap.set(n.id, { id: n.id });
+          }
+        }
+        for (const l of links) {
+          const s = String(l.source);
+          const t = String(l.target);
+          if (s && !nodeMap.has(s)) nodeMap.set(s, { id: s });
+          if (t && !nodeMap.has(t)) nodeMap.set(t, { id: t });
+        }
+        const sanitizedNodes = Array.from(nodeMap.values());
+        const payload = { type: 'budget_sankey', nodes: sanitizedNodes, links };
         const data = new TextEncoder().encode(JSON.stringify(payload));
         try {
           await room.localParticipant?.publishData?.(data, { reliable: true, topic: 'ui' });
@@ -54,6 +68,53 @@ export function getToolsForMode(mode: SessionMode | undefined, room: RoomLike): 
       },
     });
   }
+
+  // Web search tool (available in both modes). Uses Tavily with basic depth only to limit credits.
+  tools.webSearch = llm.tool({
+    description:
+      'Search the web and return top results (titles and URLs). Uses basic depth to conserve credits.',
+    parameters: z.object({
+      query: z.string().min(3).describe('What to search for'),
+      maxResults: z
+        .number()
+        .int()
+        .min(1)
+        .max(5)
+        .describe('Limit results (required 1-5; use 5 by default to conserve credits).'),
+    }),
+    execute: async ({ query, maxResults }) => {
+      const apiKey = process.env.TAVILY_API_KEY;
+      if (!apiKey) {
+        return 'Web search is not configured (missing TAVILY_API_KEY).';
+      }
+
+      const capped = Math.min(5, Math.max(1, Math.trunc(maxResults)));
+      try {
+        const response = await fetch('https://api.tavily.com/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            api_key: apiKey,
+            query,
+            search_depth: 'basic',
+            max_results: capped,
+          }),
+        });
+
+        if (!response.ok) {
+          return `Search failed: ${response.status} ${response.statusText}`;
+        }
+        const data = (await response.json()) as any;
+        const items = Array.isArray(data?.results) ? data.results.slice(0, capped) : [];
+        if (!items.length) return `No results for "${query}".`;
+        const lines = items.map((r: any) => `- ${r.title ?? r.url ?? 'Result'} — ${r.url ?? ''}`);
+        return `Top results for "${query}":\n${lines.join('\n')}`;
+      } catch (error: any) {
+        console.error('webSearch error', error);
+        return 'Search is temporarily unavailable.';
+      }
+    },
+  });
 
   return tools;
 }
