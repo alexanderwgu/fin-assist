@@ -96,6 +96,15 @@ export default function TranscriptPage() {
         </div>
       </section>
 
+      {hasSankey && sankeyNodes && sankeyLinks && (
+        <section className="mb-8">
+          <h2 className="mb-3 text-lg font-semibold">Budget Flow</h2>
+          <div className="rounded-lg border bg-background/80 p-4 backdrop-blur-sm">
+            <BudgetSankey nodes={sankeyNodes} links={sankeyLinks} />
+          </div>
+        </section>
+      )}
+
       {!items || items.length === 0 ? (
         <p className="text-muted-foreground">No transcript available.</p>
       ) : (
@@ -122,14 +131,6 @@ export default function TranscriptPage() {
         </ol>
       )}
 
-      {hasSankey && sankeyNodes && sankeyLinks && (
-        <section className="mt-10">
-          <h2 className="mb-3 text-lg font-semibold">Budget Flow</h2>
-          <div className="rounded-lg border bg-background/80 p-4 backdrop-blur-sm">
-            <BudgetSankey nodes={sankeyNodes} links={sankeyLinks} />
-          </div>
-        </section>
-      )}
     </main>
   );
 }
