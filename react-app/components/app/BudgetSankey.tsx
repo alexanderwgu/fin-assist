@@ -93,8 +93,8 @@ export function BudgetSankey({ nodes, links }: BudgetSankeyProps) {
   }
 
   return (
-    <div ref={containerRef} className="rounded-md border p-3 text-foreground">
-      <h3 className="mb-2 font-semibold">Budget Flow</h3>
+    <div ref={containerRef} className="rounded-md border px-3 pb-3 pt-0 text-foreground">
+      <h3 className="mb-1 font-semibold">Budget Flow</h3>
       <svg width={width} height={height} className="w-full">
         <g>
           {graph.links.map((l: any, i: number) => {
