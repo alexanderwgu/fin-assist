@@ -262,19 +262,78 @@ export function EmotionOverlayCanvas({ className }: { className?: string }) {
       if (video.readyState >= 2 && canvas.width && canvas.height) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        // Draw landmarks overlay with simple circles
+        // Draw only key facial landmarks: eyes, nose, mouth
         if (latestLandmarks && latestLandmarks.length > 0) {
           ctx.fillStyle = '#22c55e';
           ctx.strokeStyle = '#16a34a';
-          ctx.lineWidth = 1;
-          latestLandmarks.forEach((p) => {
-            const x = p.x * canvas.width;
-            const y = p.y * canvas.height;
-            ctx.beginPath();
-            ctx.arc(x, y, 2, 0, 2 * Math.PI);
-            ctx.fill();
-            ctx.stroke();
+          ctx.lineWidth = 1.5;
+
+          // Key landmark indices for FaceMesh (468 or 478 points)
+          const keyIndices = [
+            // Left eye: 33, 160, 158, 133, 153, 144
+            33, 160, 158, 133, 153, 144,
+            // Right eye: 362, 385, 387, 263, 373, 380
+            362, 385, 387, 263, 373, 380,
+            // Nose: 1, 2, 98, 326, 94
+            1, 2, 98, 326, 94,
+            // Mouth: 13, 14, 78, 308, 39, 269
+            13, 14, 78, 308, 39, 269,
+          ];
+
+          keyIndices.forEach((idx) => {
+            if (latestLandmarks[idx]) {
+              const p = latestLandmarks[idx];
+              const x = p.x * canvas.width;
+              const y = p.y * canvas.height;
+              ctx.beginPath();
+              ctx.arc(x, y, 2.5, 0, 2 * Math.PI);
+              ctx.fill();
+              ctx.stroke();
+            }
           });
+
+          // Draw eye connections
+          const drawLine = (idx1: number, idx2: number) => {
+            if (latestLandmarks[idx1] && latestLandmarks[idx2]) {
+              const p1 = latestLandmarks[idx1];
+              const p2 = latestLandmarks[idx2];
+              ctx.beginPath();
+              ctx.moveTo(p1.x * canvas.width, p1.y * canvas.height);
+              ctx.lineTo(p2.x * canvas.width, p2.y * canvas.height);
+              ctx.strokeStyle = '#22c55e';
+              ctx.lineWidth = 1;
+              ctx.stroke();
+            }
+          };
+
+          // Left eye outline
+          drawLine(33, 160);
+          drawLine(160, 158);
+          drawLine(158, 133);
+          drawLine(133, 153);
+          drawLine(153, 144);
+          drawLine(144, 33);
+
+          // Right eye outline
+          drawLine(362, 385);
+          drawLine(385, 387);
+          drawLine(387, 263);
+          drawLine(263, 373);
+          drawLine(373, 380);
+          drawLine(380, 362);
+
+          // Mouth outline
+          drawLine(13, 14);
+          drawLine(14, 78);
+          drawLine(78, 308);
+          drawLine(308, 39);
+          drawLine(39, 269);
+          drawLine(269, 13);
+
+          // Nose
+          drawLine(1, 98);
+          drawLine(98, 326);
+          drawLine(2, 326);
         }
       }
       animationId = requestAnimationFrame(drawFrame);
