@@ -1,0 +1,37 @@
+{
+  "name": "fin-assist-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "cd react-app && pnpm dev",
+    "build": "cd react-app && pnpm build",
+    "start": "cd react-app && pnpm start",
+    "lint": "cd react-app && pnpm lint",
+    "agent:dev": "cd agent-starter-node && pnpm dev",
+    "install:all": "pnpm install",
+    "install:react": "cd react-app && pnpm install",
+    "install:agent": "cd agent-starter-node && pnpm install"
+  },
+  "dependencies": {
+    "@ai-sdk/elevenlabs": "^1.0.14",
+    "@ai-sdk/google": "^2.0.23",
+    "@ai-sdk/openai": "^2.0.52",
+    "@fortawesome/fontawesome-free": "^6.6.0",
+    "@google-cloud/speech": "^7.2.1",
+    "ai": "^5.0.76",
+    "next": "15.5.6",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "uuid": "^13.0.0",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5"
+  },
+  "packageManager": "pnpm@9.15.9",
+  "workspaces": [
+    "react-app",
+    "agent-starter-node"
+  ]
+}

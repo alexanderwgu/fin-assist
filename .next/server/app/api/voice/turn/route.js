@@ -1,0 +1,10 @@
+var R=require("../../../../chunks/[turbopack]_runtime.js")("server/app/api/voice/turn/route.js")
+R.c("server/chunks/608e4_next_dist_b9b36721._.js")
+R.c("server/chunks/4b6e4_@opentelemetry_api_build_esm_9cee443b._.js")
+R.c("server/chunks/37e87_zod_v4_96656cb0._.js")
+R.c("server/chunks/37e87_zod_v3_6dfd1cb1._.js")
+R.c("server/chunks/node_modules__pnpm_7631d581._.js")
+R.c("server/chunks/[root-of-the-server]__a85e1741._.js")
+R.m("[project]/.next-internal/server/app/api/voice/turn/route/actions.js [app-rsc] (server actions loader, ecmascript)")
+R.m("[project]/node_modules/.pnpm/next@15.5.6_@opentelemetry+_0b3d4a82aa509ec47154efc05cf4914e/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/src/app/api/voice/turn/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)")
+module.exports=R.m("[project]/node_modules/.pnpm/next@15.5.6_@opentelemetry+_0b3d4a82aa509ec47154efc05cf4914e/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/src/app/api/voice/turn/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)").exports

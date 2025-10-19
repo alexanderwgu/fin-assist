@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 3, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/Alan/hackathon/fin-assist/node_modules/.pnpm/next%4015.5.6_%40opentelemetry%2B_0b3d4a82aa509ec47154efc05cf4914e/node_modules/next/error.js"],"sourcesContent":["module.exports = require('./dist/pages/_error')\n"],"names":[],"mappings":"AAAA,OAAO,OAAO","ignoreList":[0],"debugId":null}}]
+}
