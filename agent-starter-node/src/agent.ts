@@ -6,6 +6,7 @@ import {
   defineAgent,
   metrics,
   voice,
+  inference,
 } from '@livekit/agents';
 import * as livekit from '@livekit/agents-plugin-livekit';
 import * as silero from '@livekit/agents-plugin-silero';
@@ -54,6 +55,17 @@ export default defineAgent({
   },
   entry: async (ctx: JobContext) => {
     // Set up a voice AI pipeline using OpenAI, Cartesia, AssemblyAI, and the LiveKit turn detector
+    // Configure primary and fallback TTS providers
+    const PRIMARY_TTS_MODEL = process.env.PRIMARY_TTS_MODEL || 'elevenlabs/eleven_turbo_v2';
+    const PRIMARY_TTS_VOICE = process.env.PRIMARY_TTS_VOICE || '21m00Tcm4TlvDq8ikWAM';
+    const FALLBACK_TTS_MODEL = process.env.FALLBACK_TTS_MODEL || 'cartesia/sonic-2';
+    const FALLBACK_TTS_VOICE = process.env.FALLBACK_TTS_VOICE || undefined;
+
+    const primaryTTS = new inference.TTS({
+      model: PRIMARY_TTS_MODEL as any,
+      voice: PRIMARY_TTS_VOICE,
+    });
+
     const session = new voice.AgentSession({
       // Speech-to-text (STT) is your agent's ears, turning the user's speech into text that the LLM can understand
       // See all available models at https://docs.livekit.io/agents/models/stt/
@@ -65,7 +77,7 @@ export default defineAgent({
 
       // Text-to-speech (TTS) is your agent's voice, turning the LLM's text into speech that the user can hear
       // See all available models as well as voice selections at https://docs.livekit.io/agents/models/tts/
-      tts: 'elevenlabs/eleven_turbo_v2:21m00Tcm4TlvDq8ikWAM',
+      tts: primaryTTS,
 
       // VAD and turn detection are used to determine when the user is speaking and when the agent should respond
       // See more at https://docs.livekit.io/agents/build/turns
@@ -82,6 +94,29 @@ export default defineAgent({
     // const session = new voice.AgentSession({
     //   llm: new openai.realtime.RealtimeModel({ voice: 'marin' }),
     // });
+
+    // If the primary TTS encounters an error, switch to a fallback model for subsequent turns
+    session.on(voice.AgentSessionEventTypes.Error, (ev) => {
+      const isTTSError = typeof ev?.error === 'object' && ev?.error !== null && 'type' in (ev.error as any) && (ev.error as any).type === 'tts_error';
+      const fromTTS = ev?.source && typeof ev.source === 'object' && 'label' in (ev.source as any);
+      if (isTTSError || fromTTS) {
+        try {
+          if (FALLBACK_TTS_VOICE) {
+            primaryTTS.updateOptions({
+              model: FALLBACK_TTS_MODEL as any,
+              voice: FALLBACK_TTS_VOICE,
+            });
+          } else {
+            primaryTTS.updateOptions({
+              model: FALLBACK_TTS_MODEL as any,
+            });
+          }
+          console.warn('[TTS] Switched to fallback TTS model:', FALLBACK_TTS_MODEL);
+        } catch (e) {
+          console.error('Failed to switch to fallback TTS model', e);
+        }
+      }
+    });
 
     // Metrics collection, to measure pipeline performance
     // For more information, see https://docs.livekit.io/agents/build/metrics/
