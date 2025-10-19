@@ -10,6 +10,7 @@ import {
   useVoiceAssistant,
 } from '@livekit/components-react';
 import { cn } from '@/lib/utils';
+import { EmotionOverlayCanvas, useEmotionTracking } from '@/components/app/emotion-tracking-provider';
 
 const MotionContainer = motion.create('div');
 
@@ -81,6 +82,7 @@ export function TileLayout({ chatOpen, sankeyVisible = false }: TileLayoutProps)
   } = useVoiceAssistant();
   const [screenShareTrack] = useTracks([Track.Source.ScreenShare]);
   const cameraTrack: TrackReference | undefined = useLocalTrackRef(Track.Source.Camera);
+  const { isTrackingEnabled, isOverlayVisible } = useEmotionTracking();
 
   const isCameraEnabled = cameraTrack && !cameraTrack.publication.isMuted;
   const isScreenShareEnabled = screenShareTrack && !screenShareTrack.publication.isMuted;
@@ -230,14 +232,19 @@ export function TileLayout({ chatOpen, sankeyVisible = false }: TileLayoutProps)
                     ...ANIMATION_TRANSITION,
                     delay: animationDelay,
                   }}
-                  className="drop-shadow-lg/20"
+                  className="drop-shadow-lg/20 relative"
                 >
-                  <VideoTrack
-                    trackRef={cameraTrack || screenShareTrack}
-                    width={(cameraTrack || screenShareTrack)?.publication.dimensions?.width ?? 0}
-                    height={(cameraTrack || screenShareTrack)?.publication.dimensions?.height ?? 0}
-                    className="bg-muted aspect-square w-[90px] rounded-md object-cover"
-                  />
+                  <div className="relative">
+                    <VideoTrack
+                      trackRef={cameraTrack || screenShareTrack}
+                      width={(cameraTrack || screenShareTrack)?.publication.dimensions?.width ?? 0}
+                      height={(cameraTrack || screenShareTrack)?.publication.dimensions?.height ?? 0}
+                      className="bg-muted aspect-square w-[90px] rounded-md object-cover"
+                    />
+                    {cameraTrack && isTrackingEnabled && isOverlayVisible && (
+                      <EmotionOverlayCanvas className="pointer-events-none absolute inset-0 rounded-md" />
+                    )}
+                  </div>
                 </MotionContainer>
               )}
             </AnimatePresence>

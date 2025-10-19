@@ -18,6 +18,7 @@ import { useBudgetSankey } from '@/hooks/useBudgetSankey';
 import { saveTranscript } from '@/lib/transcript';
 import { saveSankey } from '@/lib/sankey';
 import { useRouter } from 'next/navigation';
+import { useEmotionTracking } from '@/components/app/emotion-tracking-provider';
 
 export interface ControlBarControls {
   leave?: boolean;
@@ -54,6 +55,7 @@ export function AgentControlBar({
   const messages = useChatMessages();
   const router = useRouter();
   const { nodes, links } = useBudgetSankey();
+  const { isTrackingEnabled, isOverlayVisible, enableTracking, setOverlayVisible } = useEmotionTracking();
 
   const {
     micTrackRef,
@@ -180,6 +182,28 @@ export function AgentControlBar({
             onPressedChange={handleToggleTranscript}
           >
             <ChatTextIcon weight="bold" />
+          </Toggle>
+
+          {/* Toggle Emotion Tracking */}
+          <Toggle
+            size="default"
+            variant={isTrackingEnabled ? 'default' : 'secondary'}
+            aria-label="Toggle emotion tracking"
+            pressed={isTrackingEnabled}
+            onPressedChange={enableTracking}
+          >
+            {isTrackingEnabled ? 'Tracking On' : 'Tracking Off'}
+          </Toggle>
+
+          {/* Toggle Overlay */}
+          <Toggle
+            size="default"
+            variant={isOverlayVisible ? 'default' : 'secondary'}
+            aria-label="Toggle overlay"
+            pressed={isOverlayVisible}
+            onPressedChange={setOverlayVisible}
+          >
+            {isOverlayVisible ? 'Overlay On' : 'Overlay Off'}
           </Toggle>
         </div>
 
