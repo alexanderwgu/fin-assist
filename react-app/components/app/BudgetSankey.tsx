@@ -1,12 +1,12 @@
- 'use client';
+'use client';
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { sankey as d3Sankey, sankeyLinkHorizontal } from 'd3-sankey';
-import type { SankeyLink, SankeyNode } from '@/hooks/useBudgetSankey';
+import type { D3SankeyLink, D3SankeyNode, SankeyLink, SankeyNode } from '@/hooks/useBudgetSankey';
 
 interface BudgetSankeyProps {
-  nodes: SankeyNode[];
-  links: SankeyLink[];
+  nodes: D3SankeyNode[];
+  links: D3SankeyLink[];
 }
 
 export function BudgetSankey({ nodes, links }: BudgetSankeyProps) {
@@ -68,17 +68,20 @@ export function BudgetSankey({ nodes, links }: BudgetSankeyProps) {
   }, [nodes.length, links.length]);
 
   const graph = useMemo(() => {
-    const generator = d3Sankey<any, any>()
-      .nodeId((d: any) => d.id)
+    const generator = d3Sankey<SankeyNode, SankeyLink>()
+      .nodeId((d: SankeyNode) => d.id)
       .nodeWidth(12)
       .nodePadding(12)
-      .extent([[8, 8], [width - 8, height - 8]]);
+      .extent([
+        [8, 8],
+        [width - 8, height - 8],
+      ]);
 
     try {
       return generator({
         nodes: nodes.map((n) => ({ ...n })),
         links: links.map((l) => ({ ...l })),
-      } as any);
+      }) as { nodes: D3SankeyNode[]; links: D3SankeyLink[] };
     } catch {
       return null;
     }
@@ -86,21 +89,22 @@ export function BudgetSankey({ nodes, links }: BudgetSankeyProps) {
 
   if (!graph) {
     return (
-      <div className="rounded-md border p-3 text-sm text-muted-foreground">
+      <div className="text-muted-foreground rounded-md border p-3 text-sm">
         Unable to render chart.
       </div>
     );
   }
 
   return (
-    <div ref={containerRef} className="rounded-md border px-3 pb-3 pt-0 text-foreground">
+    <div ref={containerRef} className="text-foreground rounded-md border px-3 pt-0 pb-3">
       <h3 className="mb-1 font-semibold">Budget Flow</h3>
       <svg width={width} height={height} className="w-full">
         <g>
-          {graph.links.map((l: any, i: number) => {
-            const path = sankeyLinkHorizontal<any, any>()(l);
+          {graph.links.map((l: D3SankeyLink, i: number) => {
+            const path = sankeyLinkHorizontal<D3SankeyNode, D3SankeyLink>()(l);
             const strokeWidth = Math.max(1, l.width ?? 1);
-            const sourceId = typeof l.source === 'object' && l.source ? (l.source.id ?? '') : (l.source as string);
+            const sourceId =
+              typeof l.source === 'object' && l.source ? (l.source.id ?? '') : (l.source as string);
             const color = nodeColor.get(sourceId) ?? '#93c5fd';
             return (
               <path
@@ -115,12 +119,12 @@ export function BudgetSankey({ nodes, links }: BudgetSankeyProps) {
           })}
         </g>
         <g>
-          {graph.links.map((l: any, i: number) => {
-            const sx = (l.source?.x1 ?? 0) as number;
-            const tx = (l.target?.x0 ?? 0) as number;
+          {graph.links.map((l: D3SankeyLink, i: number) => {
+            const sx = (l.source as D3SankeyNode)?.x1 ?? 0;
+            const tx = (l.target as D3SankeyNode)?.x0 ?? 0;
             const x = (sx + tx) / 2;
-            const y0 = (l.y0 ?? 0) as number;
-            const y1 = (l.y1 ?? 0) as number;
+            const y0 = l.y0 ?? 0;
+            const y1 = l.y1 ?? 0;
             const y = (y0 + y1) / 2;
             return (
               <text
@@ -139,7 +143,7 @@ export function BudgetSankey({ nodes, links }: BudgetSankeyProps) {
           })}
         </g>
         <g>
-          {graph.nodes.map((n: any, i: number) => {
+          {graph.nodes.map((n: D3SankeyNode, i: number) => {
             const x = n.x0 ?? 0;
             const y = n.y0 ?? 0;
             const w = Math.max(1, (n.x1 ?? 0) - x);
@@ -175,4 +179,3 @@ export function BudgetSankey({ nodes, links }: BudgetSankeyProps) {
     </div>
   );
 }
-

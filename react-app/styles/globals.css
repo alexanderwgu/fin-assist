@@ -8,7 +8,9 @@
 } */
 
 /* Different cursor for interactive elements */
-button, a, [role="button"] {
+button,
+a,
+[role='button'] {
   cursor: url('/alexwgucreation.png'), pointer;
 }
 

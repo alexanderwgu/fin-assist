@@ -22,5 +22,3 @@ declare module 'd3-sankey' {
     link: TLink
   ) => string | null;
 }
-
-

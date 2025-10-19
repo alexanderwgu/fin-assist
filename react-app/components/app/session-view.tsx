@@ -146,8 +146,11 @@ export const SessionView = ({
       {/* Budget Sankey (if provided by agent tool) */}
       {effectiveSankeyVisible && (
         <div className="pointer-events-auto fixed inset-0 z-50 grid place-items-center">
-          <div className="w-[min(90vw,900px)] max-h-[80vh] overflow-auto rounded-lg border bg-background/80 p-4 backdrop-blur-md shadow-lg">
-            <BudgetSankey nodes={(nodes && links ? nodes : devNodes)!} links={(nodes && links ? links : devLinks)!} />
+          <div className="bg-background/80 max-h-[80vh] w-[min(90vw,900px)] overflow-auto rounded-lg border p-4 shadow-lg backdrop-blur-md">
+            <BudgetSankey
+              nodes={(nodes && links ? nodes : devNodes)!}
+              links={(nodes && links ? links : devLinks)!}
+            />
           </div>
         </div>
       )}

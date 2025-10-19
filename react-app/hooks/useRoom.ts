@@ -89,27 +89,25 @@ export function useRoom(appConfig: AppConfig) {
           room.localParticipant.setMicrophoneEnabled(true, undefined, {
             preConnectBuffer: isPreConnectBufferEnabled,
           }),
-          tokenSource
-            .fetch({ agentName: appConfig.agentName })
-            .then((connectionDetails) => {
-              console.debug('[useRoom] Connecting to room', {
-                serverUrl: connectionDetails.serverUrl,
-                hasToken: Boolean(connectionDetails.participantToken),
+          tokenSource.fetch({ agentName: appConfig.agentName }).then((connectionDetails) => {
+            console.debug('[useRoom] Connecting to room', {
+              serverUrl: connectionDetails.serverUrl,
+              hasToken: Boolean(connectionDetails.participantToken),
+            });
+            // If server returned demo fallback, show demo toast and do not connect
+            if (
+              typeof connectionDetails.participantToken === 'string' &&
+              connectionDetails.participantToken === 'demo-token'
+            ) {
+              toastAlert({
+                title: 'Demo Mode',
+                description: 'Server returned demo credentials. Configure LiveKit env vars.',
               });
-              // If server returned demo fallback, show demo toast and do not connect
-              if (
-                typeof connectionDetails.participantToken === 'string' &&
-                connectionDetails.participantToken === 'demo-token'
-              ) {
-                toastAlert({
-                  title: 'Demo Mode',
-                  description: 'Server returned demo credentials. Configure LiveKit env vars.',
-                });
-                console.warn('[useRoom] Demo Mode: server returned demo credentials');
-                return;
-              }
-              return room.connect(connectionDetails.serverUrl, connectionDetails.participantToken);
-            }),
+              console.warn('[useRoom] Demo Mode: server returned demo credentials');
+              return;
+            }
+            return room.connect(connectionDetails.serverUrl, connectionDetails.participantToken);
+          }),
         ]).catch((error) => {
           if (aborted.current) {
             // Once the effect has cleaned up after itself, drop any errors

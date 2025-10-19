@@ -1,9 +1,27 @@
 import { useEffect, useState } from 'react';
-import { useRoomContext } from '@livekit/components-react';
 import type { RoomEvent } from 'livekit-client';
+import { useRoomContext } from '@livekit/components-react';
 
+// Base types before D3 processing
 export type SankeyNode = { id: string };
 export type SankeyLink = { source: string; target: string; value: number };
+
+// Extended types after D3 Sankey layout processing
+export interface D3SankeyNode extends SankeyNode {
+  x0?: number;
+  x1?: number;
+  y0?: number;
+  y1?: number;
+}
+
+export interface D3SankeyLink {
+  source: string | D3SankeyNode;
+  target: string | D3SankeyNode;
+  value: number;
+  width?: number;
+  y0?: number;
+  y1?: number;
+}
 
 export function useBudgetSankey() {
   const room = useRoomContext();
@@ -32,4 +50,3 @@ export function useBudgetSankey() {
 
   return { nodes, links };
 }
-

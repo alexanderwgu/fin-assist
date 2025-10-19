@@ -2,16 +2,17 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { readTranscript, clearTranscript, type TranscriptItem } from '@/lib/transcript';
-import { readSankey, clearSankey } from '@/lib/sankey';
 import { BudgetSankey } from '@/components/app/BudgetSankey';
+import type { D3SankeyLink, D3SankeyNode } from '@/hooks/useBudgetSankey';
+import { clearSankey, readSankey } from '@/lib/sankey';
+import { type TranscriptItem, clearTranscript, readTranscript } from '@/lib/transcript';
 
 export default function TranscriptPage() {
   const [items, setItems] = useState<TranscriptItem[] | null>(null);
   const [endedAt, setEndedAt] = useState<number | null>(null);
   const [hasSankey, setHasSankey] = useState(false);
-  const [sankeyNodes, setSankeyNodes] = useState<any[] | null>(null);
-  const [sankeyLinks, setSankeyLinks] = useState<any[] | null>(null);
+  const [sankeyNodes, setSankeyNodes] = useState<D3SankeyNode[] | null>(null);
+  const [sankeyLinks, setSankeyLinks] = useState<D3SankeyLink[] | null>(null);
 
   useEffect(() => {
     const payload = readTranscript();
@@ -89,7 +90,7 @@ export default function TranscriptPage() {
       {hasSankey && sankeyNodes && sankeyLinks && (
         <section className="mt-10">
           <h2 className="mb-3 text-lg font-semibold">Budget Flow</h2>
-          <div className="rounded-lg border bg-background/80 p-4 backdrop-blur-sm">
+          <div className="bg-background/80 rounded-lg border p-4 backdrop-blur-sm">
             <BudgetSankey nodes={sankeyNodes} links={sankeyLinks} />
           </div>
         </section>
@@ -97,5 +98,3 @@ export default function TranscriptPage() {
     </main>
   );
 }
-
-

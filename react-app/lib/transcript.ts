@@ -1,6 +1,5 @@
 // Minimal client-side transcript storage for navigation handoff
 // Stores the latest transcript payload in sessionStorage
-
 import type { ReceivedChatMessage } from '@livekit/components-react';
 
 export type TranscriptItem = Pick<ReceivedChatMessage, 'timestamp' | 'message'> & {
@@ -39,5 +38,3 @@ export function clearTranscript(): void {
     sessionStorage.removeItem(STORAGE_KEY);
   } catch {}
 }
-
-

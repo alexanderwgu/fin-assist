@@ -1,6 +1,7 @@
 'use client';
 
 import { type HTMLAttributes, useCallback, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Track } from 'livekit-client';
 import { useChat, useRemoteParticipants } from '@livekit/components-react';
 import { ChatTextIcon, PhoneDisconnectIcon } from '@phosphor-icons/react/dist/ssr';
@@ -8,16 +9,15 @@ import { useSession } from '@/components/app/session-provider';
 import { TrackToggle } from '@/components/livekit/agent-control-bar/track-toggle';
 import { Button } from '@/components/livekit/button';
 import { Toggle } from '@/components/livekit/toggle';
+import { useBudgetSankey } from '@/hooks/useBudgetSankey';
+import { useChatMessages } from '@/hooks/useChatMessages';
+import { saveSankey } from '@/lib/sankey';
+import { type TranscriptItem, saveTranscript } from '@/lib/transcript';
 import { cn } from '@/lib/utils';
 import { ChatInput } from './chat-input';
 import { UseInputControlsProps, useInputControls } from './hooks/use-input-controls';
 import { usePublishPermissions } from './hooks/use-publish-permissions';
 import { TrackSelector } from './track-selector';
-import { useChatMessages } from '@/hooks/useChatMessages';
-import { useBudgetSankey } from '@/hooks/useBudgetSankey';
-import { saveTranscript } from '@/lib/transcript';
-import { saveSankey } from '@/lib/sankey';
-import { useRouter } from 'next/navigation';
 
 export interface ControlBarControls {
   leave?: boolean;
@@ -78,7 +78,7 @@ export function AgentControlBar({
     [onChatOpenChange, setChatOpen]
   );
 
-  const transcriptItems = useMemo(() => {
+  const transcriptItems = useMemo((): TranscriptItem[] => {
     return messages.map((m) => ({
       timestamp: m.timestamp,
       message: m.message,

@@ -34,5 +34,3 @@ export function clearSankey(): void {
     sessionStorage.removeItem(STORAGE_KEY);
   } catch {}
 }
-
-

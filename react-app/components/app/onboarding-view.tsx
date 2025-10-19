@@ -66,7 +66,7 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
     '24/7 empathetic financial guidance',
     'Crisis detection and support',
     'Interactive budget visualization',
-    'Financial literacy education'
+    'Financial literacy education',
   ];
 
   if (step === 'welcome') {
@@ -90,7 +90,9 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
           }`}
         >
           <div className="mb-8">
-            <h1 className="text-foreground mb-4 text-3xl font-light tracking-wide">Welcome to FinAssist</h1>
+            <h1 className="text-foreground mb-4 text-3xl font-light tracking-wide">
+              Welcome to FinAssist
+            </h1>
             <p className="text-muted-foreground text-lg">
               Your compassionate financial wellness companion
             </p>
@@ -102,24 +104,24 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
                 key={idx}
                 onMouseEnter={() => setHoveredFeature(idx)}
                 onMouseLeave={() => setHoveredFeature(null)}
-                className={`relative rounded-lg p-4 cursor-crosshair transition-all duration-300 ${
+                className={`relative cursor-crosshair rounded-lg p-4 transition-all duration-300 ${
                   hoveredFeature === idx
-                    ? 'bg-white border-2 border-gray-300/60 shadow-lg transform scale-105'
-                    : 'bg-muted/50 border border-muted-foreground/20 hover:bg-gray-50/80 hover:border-muted-foreground/30'
+                    ? 'scale-105 transform border-2 border-gray-300/60 bg-white shadow-lg'
+                    : 'bg-muted/50 border-muted-foreground/20 hover:border-muted-foreground/30 border hover:bg-gray-50/80'
                 }`}
               >
                 <div className="flex items-start space-x-3">
-                  <div className={`w-3 h-3 rounded-full mt-0.5 transition-all duration-300 ${
-                    hoveredFeature === idx
-                      ? 'bg-blue-500 shadow-md'
-                      : 'bg-gray-400'
-                  }`} />
+                  <div
+                    className={`mt-0.5 h-3 w-3 rounded-full transition-all duration-300 ${
+                      hoveredFeature === idx ? 'bg-blue-500 shadow-md' : 'bg-gray-400'
+                    }`}
+                  />
                   <div className="flex-1">
-                    <p className={`text-sm font-medium transition-colors duration-300 leading-relaxed ${
-                      hoveredFeature === idx
-                        ? 'text-gray-900'
-                        : 'text-gray-300'
-                    }`}>
+                    <p
+                      className={`text-sm leading-relaxed font-medium transition-colors duration-300 ${
+                        hoveredFeature === idx ? 'text-gray-900' : 'text-gray-300'
+                      }`}
+                    >
                       {feature}
                     </p>
                   </div>
@@ -134,10 +136,11 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
 
           {/* Privacy Notice */}
           <div className="mt-6 max-w-sm">
-            <p className="text-center text-xs text-muted-foreground/80 leading-relaxed">
-              <span className="font-medium text-white-foreground">Privacy First:</span> No data is stored at all.
-              We prioritize your total privacy and confidentiality and do not collect any data.
-              Your information stays completely secure and is deleted after you exit the app.
+            <p className="text-muted-foreground/80 text-center text-xs leading-relaxed">
+              <span className="text-white-foreground font-medium">Privacy First:</span> No data is
+              stored at all. We prioritize your total privacy and confidentiality and do not collect
+              any data. Your information stays completely secure and is deleted after you exit the
+              app.
             </p>
           </div>
         </div>
@@ -273,13 +276,9 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
           {/* Skip/Fast-forward button */}
           <button
             onClick={handleVideoEnd}
-            className="absolute right-6 bottom-6 flex items-center gap-2 rounded-full bg-white/20 px-6 py-3 text-white backdrop-blur-sm transition-all duration-300 hover:bg-white/30 hover:scale-105 active:scale-95 shadow-lg border border-white/20 animate-pulse hover:animate-none"
+            className="absolute right-6 bottom-6 flex animate-pulse items-center gap-2 rounded-full border border-white/20 bg-white/20 px-6 py-3 text-white shadow-lg backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:animate-none hover:bg-white/30 active:scale-95"
           >
-            <svg
-              className="size-5"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="size-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M4 18l8.5-6L4 6v12zm9-12v12l8.5-6L13 6z" />
               <path d="M20 6v12l1.5-1V7L20 6z" />
             </svg>
@@ -326,7 +325,9 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
               />
             </svg>
           </div>
-          <h1 className="text-foreground mb-2 text-3xl font-light tracking-wide">You&apos;re all set!</h1>
+          <h1 className="text-foreground mb-2 text-3xl font-light tracking-wide">
+            You&apos;re all set!
+          </h1>
           <p className="text-muted-foreground text-lg">
             Welcome, {name}! We&apos;re here to support your financial journey.
           </p>
