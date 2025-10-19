@@ -54,7 +54,10 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
     setFadeState('out');
     setTimeout(() => {
       setStep('complete');
-      onComplete({ name: name.trim(), age: age.trim() });
+      // Show completion screen for 3 seconds before transitioning to main app
+      setTimeout(() => {
+        onComplete({ name: name.trim(), age: age.trim() });
+      }, 3000);
     }, 500);
   };
 
@@ -163,7 +166,7 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="/onboarding-bg.png"
+            src="/onboarding-bg2.png"
             alt="Onboarding background"
             fill
             className="object-cover"
@@ -248,7 +251,7 @@ export function OnboardingView({ onComplete }: OnboardingViewProps) {
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img
-          src="/onboarding-bg.png"
+          src="/onboarding-bg2.png"
           alt=""
           className="h-full w-full object-cover"
         />
