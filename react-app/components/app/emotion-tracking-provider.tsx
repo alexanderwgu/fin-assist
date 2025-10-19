@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { DataPacket_Kind } from 'livekit-client';
+import type { DataPublishOptions } from 'livekit-client';
 import { RoomContext } from '@livekit/components-react';
 import {
   FaceLandmarker,
@@ -124,6 +124,18 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
       }
 
       const videoEl = processingVideoRef.current!;
+      // Ensure the element has current data and dimensions before detection
+      if (videoEl.readyState < 2) {
+        await new Promise<void>((resolve) => {
+          const onLoaded = () => resolve();
+          videoEl.addEventListener('loadeddata', onLoaded, { once: true });
+        });
+      }
+      if (!videoEl.videoWidth || !videoEl.videoHeight) {
+        // As a fallback, wait a microtask and check again
+        await new Promise((r) => setTimeout(r, 50));
+        if (!videoEl.videoWidth || !videoEl.videoHeight) return;
+      }
       const now = performance.now();
       const res = await landmarker.detectForVideo(videoEl, now);
       const face0 = res.faceLandmarks?.[0];
@@ -140,8 +152,10 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
             sentiment: s,
             at: Date.now(),
           });
+          const data = new TextEncoder().encode(payload);
           try {
-            room.localParticipant.publishData(payload, DataPacket_Kind.RELIABLE);
+            const opts: DataPublishOptions = { reliable: true, topic: 'emotion_update' } as const;
+            room.localParticipant.publishData(data, opts);
           } catch {}
         }
       }
@@ -227,14 +241,9 @@ export function EmotionOverlayCanvas({ className }: { className?: string }) {
       return;
     }
 
-    // Draw landmarks
+    // Draw points only (avoid missing FaceMeshConnections)
     const drawingUtils = new DrawingUtils(canvas.getContext('2d')!);
-    // MediaPipe landmarks are normalized [0,1]; scale to canvas
     const scaledPoints = latestLandmarks.map((p) => ({ x: p.x * canvas.width, y: p.y * canvas.height }));
-    drawingUtils.drawConnectors({ landmarks: scaledPoints as any }, (window as any).FaceMeshConnections || [], {
-      color: '#22c55e',
-      lineWidth: 1,
-    });
     drawingUtils.drawLandmarks(scaledPoints as any, { color: '#22c55e', lineWidth: 1, radius: 1 });
   }, [isTrackingEnabled, isOverlayVisible, latestLandmarks]);
 
