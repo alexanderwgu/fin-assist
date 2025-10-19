@@ -230,13 +230,15 @@ export function TileLayout({ chatOpen, sankeyVisible = false }: TileLayoutProps)
                     ...ANIMATION_TRANSITION,
                     delay: animationDelay,
                   }}
-                  className="drop-shadow-lg/20 relative"
+                  className="relative drop-shadow-lg/20"
                 >
                   <div className="relative">
                     <VideoTrack
                       trackRef={cameraTrack || screenShareTrack}
                       width={(cameraTrack || screenShareTrack)?.publication.dimensions?.width ?? 0}
-                      height={(cameraTrack || screenShareTrack)?.publication.dimensions?.height ?? 0}
+                      height={
+                        (cameraTrack || screenShareTrack)?.publication.dimensions?.height ?? 0
+                      }
                       className="bg-muted aspect-square w-[90px] rounded-md object-cover"
                     />
                   </div>

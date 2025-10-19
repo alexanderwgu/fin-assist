@@ -2,8 +2,8 @@
 
 import { RoomAudioRenderer, StartAudio } from '@livekit/components-react';
 import type { AppConfig } from '@/app-config';
-import { SessionProvider } from '@/components/app/session-provider';
 import { EmotionTrackingProvider } from '@/components/app/emotion-tracking-provider';
+import { SessionProvider } from '@/components/app/session-provider';
 import { ViewController } from '@/components/app/view-controller';
 import { Toaster } from '@/components/livekit/toaster';
 

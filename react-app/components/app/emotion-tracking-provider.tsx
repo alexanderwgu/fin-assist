@@ -1,12 +1,17 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { DataPublishOptions } from 'livekit-client';
 import { RoomContext } from '@livekit/components-react';
-import {
-  FaceLandmarker,
-  FilesetResolver,
-} from '@mediapipe/tasks-vision';
+import { FaceLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 
 type SentimentLabel = 'neutral' | 'attentive' | 'uncertain' | 'stressed';
 
@@ -29,7 +34,9 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
     confidence: number;
     at: number;
   }>();
-  const [latestLandmarks, setLatestLandmarks] = useState<Array<{ x: number; y: number }> | null>(null);
+  const [latestLandmarks, setLatestLandmarks] = useState<Array<{ x: number; y: number }> | null>(
+    null
+  );
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
 
   const faceLandmarkerRef = useRef<FaceLandmarker | null>(null);
@@ -43,7 +50,10 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
     const start = async () => {
       if (!isTrackingEnabled || localStream) return;
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 }, audio: false });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 640, height: 480 },
+          audio: false,
+        });
         if (!active) {
           stream.getTracks().forEach((t) => t.stop());
           return;
@@ -186,7 +196,8 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
     if (!localStream) return;
     const handleEnded = () => setIsTrackingEnabled(false);
     localStream.getTracks().forEach((t) => t.addEventListener('ended', handleEnded));
-    return () => localStream.getTracks().forEach((t) => t.removeEventListener('ended', handleEnded));
+    return () =>
+      localStream.getTracks().forEach((t) => t.removeEventListener('ended', handleEnded));
   }, [localStream]);
 
   const enableTracking = useCallback((enabled: boolean) => {
@@ -211,7 +222,9 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
     [isTrackingEnabled, lastSentiment, latestLandmarks, localStream, enableTracking]
   );
 
-  return <EmotionTrackingContext.Provider value={value}>{children}</EmotionTrackingContext.Provider>;
+  return (
+    <EmotionTrackingContext.Provider value={value}>{children}</EmotionTrackingContext.Provider>
+  );
 }
 
 export function useEmotionTracking() {
@@ -219,5 +232,3 @@ export function useEmotionTracking() {
   if (!ctx) throw new Error('useEmotionTracking must be used within EmotionTrackingProvider');
   return ctx;
 }
-
-
