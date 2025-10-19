@@ -13,8 +13,8 @@ import * as silero from '@livekit/agents-plugin-silero';
 import { BackgroundVoiceCancellation } from '@livekit/noise-cancellation-node';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'node:url';
-import { getPromptForMode, type SessionMode } from './prompts';
-import { getToolsForMode } from './tools';
+import { getPromptForMode, type SessionMode } from './prompts.js';
+import { getToolsForMode } from './tools.js';
 
 dotenv.config({ path: '.env.local' });
 
@@ -60,16 +60,26 @@ export default defineAgent({
     const PRIMARY_TTS_VOICE = process.env.PRIMARY_TTS_VOICE || '21m00Tcm4TlvDq8ikWAM';
     const FALLBACK_TTS_MODEL = process.env.FALLBACK_TTS_MODEL || 'cartesia/sonic-2';
     const FALLBACK_TTS_VOICE = process.env.FALLBACK_TTS_VOICE || undefined;
+    // Configure primary and fallback STT providers
+    const PRIMARY_STT_MODEL = process.env.PRIMARY_STT_MODEL || 'assemblyai/universal-streaming';
+    const FALLBACK_STT_MODEL = process.env.FALLBACK_STT_MODEL || 'deepgram/nova-3';
+    const STT_LANGUAGE = process.env.STT_LANGUAGE || 'en';
 
     const primaryTTS = new inference.TTS({
       model: PRIMARY_TTS_MODEL as any,
       voice: PRIMARY_TTS_VOICE,
     });
 
+    // Instantiate STT explicitly so we can swap models on errors
+    const primarySTT = new inference.STT({
+      model: PRIMARY_STT_MODEL as any,
+      language: STT_LANGUAGE as any,
+    });
+
     const session = new voice.AgentSession({
       // Speech-to-text (STT) is your agent's ears, turning the user's speech into text that the LLM can understand
       // See all available models at https://docs.livekit.io/agents/models/stt/
-      stt: 'assemblyai/universal-streaming:en',
+      stt: primarySTT,
 
       // A Large Language Model (LLM) is your agent's brain, processing user input and generating a response
       // See all providers at https://docs.livekit.io/agents/models/llm/
@@ -95,11 +105,14 @@ export default defineAgent({
     //   llm: new openai.realtime.RealtimeModel({ voice: 'marin' }),
     // });
 
-    // If the primary TTS encounters an error, switch to a fallback model for subsequent turns
+    // On error events, switch only the relevant subsystem (TTS vs STT)
+    let ttsUsingFallback = false;
+    let sttUsingFallback = false;
     session.on(voice.AgentSessionEventTypes.Error, (ev) => {
-      const isTTSError = typeof ev?.error === 'object' && ev?.error !== null && 'type' in (ev.error as any) && (ev.error as any).type === 'tts_error';
-      const fromTTS = ev?.source && typeof ev.source === 'object' && 'label' in (ev.source as any);
-      if (isTTSError || fromTTS) {
+      const sourceLabel = (ev?.source as any)?.label as string | undefined;
+
+      // TTS fallback: only when the error came from TTS
+      if (sourceLabel === 'inference.TTS' && !ttsUsingFallback) {
         try {
           if (FALLBACK_TTS_VOICE) {
             primaryTTS.updateOptions({
@@ -111,9 +124,26 @@ export default defineAgent({
               model: FALLBACK_TTS_MODEL as any,
             });
           }
+          ttsUsingFallback = true;
           console.warn('[TTS] Switched to fallback TTS model:', FALLBACK_TTS_MODEL);
         } catch (e) {
           console.error('Failed to switch to fallback TTS model', e);
+        }
+        return;
+      }
+
+      // STT fallback: only when the error came from STT
+      if (sourceLabel === 'inference.STT' && !sttUsingFallback) {
+        try {
+          primarySTT.updateOptions({
+            model: FALLBACK_STT_MODEL as any,
+            // keep language unchanged unless explicitly overridden via env
+            language: STT_LANGUAGE as any,
+          });
+          sttUsingFallback = true;
+          console.warn('[STT] Switched to fallback STT model:', FALLBACK_STT_MODEL);
+        } catch (e) {
+          console.error('Failed to switch to fallback STT model', e);
         }
       }
     });

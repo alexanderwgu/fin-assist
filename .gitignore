@@ -1,0 +1,48 @@
+# Root ignore rules for the monorepo (agent-starter-node + react-app)
+
+# Dependencies
+node_modules/
+
+
+agent-starter-node/node_modules/
+react-app/node_modules/
+
+# Build outputs
+dist/
+agent-starter-node/dist/
+react-app/dist/
+build/
+.next/
+out/
+
+
+# Caches and tooling
+.cache/
+.parcel-cache/
+.turbo/
+.nyc_output/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# Env files (keep examples)
+.env*
+!.env.example
+**/.env*
+!**/.env.example
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# IDE/editor
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+
