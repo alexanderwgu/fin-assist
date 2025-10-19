@@ -242,7 +242,7 @@ export function TileLayout({ chatOpen, sankeyVisible = false }: TileLayoutProps)
                       className="bg-muted aspect-square w-[90px] rounded-md object-cover"
                     />
                     {cameraTrack && isTrackingEnabled && isOverlayVisible && (
-                      <EmotionOverlayCanvas className="pointer-events-none absolute inset-0 rounded-md" />
+                      <EmotionOverlayCanvas className="pointer-events-none absolute inset-0 rounded-md w-[90px] h-[90px]" />
                     )}
                   </div>
                 </MotionContainer>

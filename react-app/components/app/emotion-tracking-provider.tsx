@@ -119,6 +119,7 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
     }
 
     let active = true;
+    let lastPublishTime = 0;
 
     const runDetectionLoop = async () => {
       if (!active) return;
@@ -132,8 +133,8 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
         }
 
         const now = performance.now();
-        // Only run detection every ~500ms to avoid overwhelming the thread
-        if (now - lastAnalysisRef.current < 500) {
+        // Run detection every ~100ms for responsive overlay (was 500ms)
+        if (now - lastAnalysisRef.current < 100) {
           detectionLoopRef.current = requestAnimationFrame(runDetectionLoop);
           return;
         }
@@ -148,8 +149,8 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
             const s = computeSentiment(flat);
             setLastSentiment({ label: s.label, confidence: s.confidence, at: Date.now() });
 
-            // Publish to room data channel periodically (every 10-15s)
-            if (room && room.localParticipant && now - lastAnalysisRef.current > 12000) {
+            // Publish to room data channel periodically (every 10-15s, separate from overlay updates)
+            if (room && room.localParticipant && now - lastPublishTime > 12000) {
               const payload = JSON.stringify({
                 type: 'emotion_update',
                 sentiment: s,
@@ -159,6 +160,7 @@ export function EmotionTrackingProvider({ children }: { children: React.ReactNod
               try {
                 const opts: DataPublishOptions = { reliable: true, topic: 'emotion_update' };
                 room.localParticipant.publishData(data, opts);
+                lastPublishTime = now;
               } catch {}
             }
           }
