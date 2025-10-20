@@ -856,7 +856,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ### Contact
 
 - 📧 **Email**: founders@capycot.com
-- 🌐 **Website**: [FinAssist.app](https://FinAssist.app)
+- 🌐 **Website**: [https://FinAssist.app](https://devpost.com/software/fin-lucent-a-financial-hotline-and-personal-mentor?_gl=1*oxy7v7*_gcl_au*NDM1OTYyNTk4LjE3NjA5MDE3OTU.*_ga*MTEwMzI4MzU0Mi4xNzYwOTAxNzk2*_ga_0YHJK3Y10M*czE3NjA5MDE3OTUkbzEkZzEkdDE3NjA5MDE4NDEkajE0JGwwJGgw)
 
 ---
 
