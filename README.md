@@ -1,4 +1,4 @@
-# 🎯 FinAssist - FinAssist Financial Hotline
+# FinAssist - FinAssist Financial Hotline
 
 A 24-hour hackathon project: an **AI-driven financial hotline** that provides soothing voice assistance, emotional crisis detection, and financial literacy education. Built with modern web technologies and powered by real-time voice communication.
 
@@ -7,7 +7,7 @@ A 24-hour hackathon project: an **AI-driven financial hotline** that provides so
 DISCLAIMER: NO DATA IS COLLECTED + IF AGENT ISN'T TALKING BACK, OUR TTS USAGE IS 99.9% FRIED AND RATE LIMITED!
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Project Overview](#project-overview)
 - [Key Features](#key-features)
@@ -25,15 +25,15 @@ DISCLAIMER: NO DATA IS COLLECTED + IF AGENT ISN'T TALKING BACK, OUR TTS USAGE IS
 
 ---
 
-## 🎯 Project Overview
+## Project Overview
 
 **FinAssist** is a financial wellness platform designed with emotional intelligence at its core. Rather than bombarding users with financial jargon or fear-based warnings, FinAssist:
 
-✨ **Provides Real-Time Voice Support** - Natural conversations with an AI financial mentor
-💬 **Teaches Financial Literacy** - Guided lessons on budgeting, debt, savings, and credit scores
-🆘 **Detects Crisis Situations** - Identifies panic, overwhelm, or self-harm language and escalates appropriately
-🤝 **Offers Human-Centered Guidance** - Directs users to trusted resources and hotlines when needed
-🧘 **Maintains Calm Tone** - Soothing UI and compassionate responses normalize financial confusion
+**Provides Real-Time Voice Support** - Natural conversations with an AI financial mentor
+**Teaches Financial Literacy** - Guided lessons on budgeting, debt, savings, and credit scores
+**Detects Crisis Situations** - Identifies panic, overwhelm, or self-harm language and escalates appropriately
+**Offers Human-Centered Guidance** - Directs users to trusted resources and hotlines when needed
+**Maintains Calm Tone** - Soothing UI and compassionate responses normalize financial confusion
 
 ### Success Metrics
 
@@ -43,9 +43,9 @@ DISCLAIMER: NO DATA IS COLLECTED + IF AGENT ISN'T TALKING BACK, OUR TTS USAGE IS
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 🎙️ Voice Assistant (`/dashboard`)
+### Voice Assistant (`/dashboard`)
 - **Real-time Voice Interaction**: StreamingTextProcedure with LiveKit for seamless two-way communication
 - **AI-Powered Responses**: Context-aware financial guidance using Claude/GPT
 - **Emotional Voice Synthesis**: ElevenLabs TTS for soothing, human-like responses
@@ -53,7 +53,7 @@ DISCLAIMER: NO DATA IS COLLECTED + IF AGENT ISN'T TALKING BACK, OUR TTS USAGE IS
 - **Audio Playback**: Smooth voice synthesis with waveform visualization
 - **Pulse Animation**: Engaging microphone UI with motion effects
 
-### 📚 Financial Literacy (`/literacy`)
+### Financial Literacy (`/literacy`)
 Six comprehensive learning modules:
 - **Budgeting Basics** - Creating and maintaining a personal budget
 - **Debt Management** - Understanding and managing different types of debt
@@ -68,7 +68,7 @@ Features:
 - Hover effects and smooth transitions
 - Responsive design for all devices
 
-### 🆘 Crisis Support (`/crisis-support`)
+### Crisis Support (`/crisis-support`)
 When panic language is detected:
 - **Emergency Hotlines** - Direct contact buttons for trusted financial and mental health resources
 - **Grounding Techniques** - Step-by-step exercises (5-4-3-2-1 technique, breathing exercises)
@@ -76,7 +76,7 @@ When panic language is detected:
 - **Resource Links** - Curated list of trusted financial counseling services
 - **Safe Escalation** - Graceful handoff to human support
 
-### 🧭 Navigation & UI
+### Navigation & UI
 - **Gradient Sidebar** - Modern, soothing aesthetic with active state indicators
 - **Responsive Hamburger Menu** - Mobile-first design approach
 - **Support Section** - Quick access to crisis resources and help
@@ -85,7 +85,7 @@ When panic language is detected:
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 ### Frontend (FinAssist React App)
 
@@ -142,7 +142,7 @@ When panic language is detected:
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ### Monorepo Structure
 
@@ -211,7 +211,7 @@ Crisis Protocol Activated
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ### Frontend App Structure
 
@@ -224,10 +224,10 @@ react-app/
 │   │   ├── app-config/             # Config endpoint
 │   │   ├── connection-details/     # LiveKit credentials
 │   │   └── summary/                # Session summary
-│   ├── dashboard/page.tsx           # 🎙️ Voice assistant
-│   ├── literacy/page.tsx            # 📚 Learning modules
-│   ├── crisis-support/page.tsx      # 🆘 Crisis resources
-│   └── transcript/page.tsx          # 📝 Session transcript
+│   ├── dashboard/page.tsx           # Voice assistant
+│   ├── literacy/page.tsx            # Learning modules
+│   ├── crisis-support/page.tsx      # Crisis resources
+│   └── transcript/page.tsx          # Session transcript
 │
 ├── components/
 │   ├── app/
@@ -304,7 +304,7 @@ agent-starter-node/
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -370,7 +370,7 @@ pnpm agent:dev
 
 ---
 
-## 📦 Installation
+## Installation
 
 ### Detailed Setup
 
@@ -461,7 +461,7 @@ pnpm lint
 
 ---
 
-## 🏃 Development
+## Development
 
 ### Running the Application
 
@@ -540,7 +540,7 @@ pnpm lint
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 ### App Configuration (`react-app/app-config.ts`)
 
@@ -633,7 +633,7 @@ ELEVENLABS_VOICE_ID=21m00Tcm4TlvDq8ikWAM  # Calm voice ID
 
 ---
 
-## 🌐 Deployment
+## Deployment
 
 ### Frontend Deployment (Vercel - Recommended)
 
@@ -725,17 +725,17 @@ pm2 save
 
 ---
 
-## 🔒 Security
+## Security
 
 ### Security Measures Implemented
 
-- ✅ **API Validation**: Zod schemas for all inputs
-- ✅ **Environment Secrets**: All sensitive data in `.env.local`
-- ✅ **Error Boundaries**: Graceful error handling throughout
-- ✅ **CORS Protection**: LiveKit CORS policies
-- ✅ **Rate Limiting**: Built-in API throttling
-- ✅ **Type Safety**: Full TypeScript coverage
-- ✅ **Dependency Scanning**: Regular npm audit
+- **API Validation**: Zod schemas for all inputs
+- **Environment Secrets**: All sensitive data in `.env.local`
+- **Error Boundaries**: Graceful error handling throughout
+- **CORS Protection**: LiveKit CORS policies
+- **Rate Limiting**: Built-in API throttling
+- **Type Safety**: Full TypeScript coverage
+- **Dependency Scanning**: Regular npm audit
 
 ### Security Best Practices
 
@@ -793,9 +793,8 @@ try {
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-We don't welcome contributions because we don't want to look at this project anymore lol! 
 
 ### Getting Started (if u still want to, though)
 
@@ -829,7 +828,7 @@ chore: Upgrade dependencies
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
 
@@ -844,7 +843,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ---
 
-## 📞 Support & Resources
+## Support & Resources
 
 ### Documentation
 
@@ -855,36 +854,22 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ### Contact
 
-- 📧 **Email**: founders@capycot.com
-- 🌐 **Website**: [https://FinAssist.app](https://devpost.com/software/fin-lucent-a-financial-hotline-and-personal-mentor?_gl=1*oxy7v7*_gcl_au*NDM1OTYyNTk4LjE3NjA5MDE3OTU.*_ga*MTEwMzI4MzU0Mi4xNzYwOTAxNzk2*_ga_0YHJK3Y10M*czE3NjA5MDE3OTUkbzEkZzEkdDE3NjA5MDE4NDEkajE0JGwwJGgw)
+- **Website**: [https://FinAssist.app](https://devpost.com/software/fin-lucent-a-financial-hotline-and-personal-mentor?_gl=1*oxy7v7*_gcl_au*NDM1OTYyNTk4LjE3NjA5MDE3OTU.*_ga*MTEwMzI4MzU0Mi4xNzYwOTAxNzk2*_ga_0YHJK3Y10M*czE3NjA5MDE3OTUkbzEkZzEkdDE3NjA5MDE4NDEkajE0JGwwJGgw)
 
 ---
 
-## 🎯 Project Status
+## Project Status
 
-- ✅ Core voice agent functionality
-- ✅ Financial literacy modules
-- ✅ Crisis detection system
-- ✅ Real-time transcription
-- 🔄 Integration testing (in progress)
-- 📋 Advanced analytics (planned)
-- 📋 Mobile app (planned)
-
----
-
-## 🙏 Acknowledgments
-
-Built with ❤️ during a 24-hour hackathon by developers passionate about financial wellness and mental health.
-
-**Special thanks to:**
-- LiveKit team for real-time communication
-- Vercel AI SDK for LLM integration
-- ElevenLabs for emotional voice synthesis
-- Open-source community for amazing tools
-- My amazing besty alexander w gu
-- capycot.com
+- Core voice agent functionality
+- Financial literacy modules
+- Crisis detection system
+- Real-time transcription
+- Integration testing (in progress)
+- Advanced analytics (planned)
+- Mobile app (planned)
 
 ---
+
 
 **Last Updated**: October 2025 | **Version**: 0.1.0 (Hackathon Release)
 
