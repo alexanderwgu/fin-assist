@@ -4,7 +4,7 @@ A 24-hour hackathon project: an **AI-driven financial hotline** that provides so
 
 **Mission:** Help users feel calmer and more confident about their finances through compassionate, human-centered AI assistance.
 
-DISCLAIMER: NO DATA IS COLLECTED + IF AGENT ISN'T TALKING BACK, OUR TTS USAGE IS 99.9% FRIED AND RATE LIMITED!
+DISCLAIMER: NO DATA IS COLLECTED
 ---
 
 ## Table of Contents
